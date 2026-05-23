@@ -12,8 +12,8 @@ namespace PerkinElmerSP2CSV
     {
         static readonly Dictionary<string, IFileProvider> SupportedProviders = (new IFileProvider[]
         {
-            SpFileProvider.Instance,
-            PrfFileProvider.Instance
+            SpFileProvider.Instance
+            //PrfFileProvider.Instance
         }).ToDictionary(x => x.Extension, x => x);
 
         static readonly CsvConfiguration CsvConf = new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture);
@@ -23,7 +23,6 @@ namespace PerkinElmerSP2CSV
         static void Main(string[] args)
         {
             Console.WriteLine("Perkin Elmer CSV toolkit v2.1 started!");
-            Console.CancelKeyPress += Console_CancelKeyPress;
             RecursiveOption = args.Contains("-r");
             OverwriteOption = args.Contains("-o");
             Console.WriteLine($"Recursive folder processing: {RecursiveOption}, Overwrite existing CSV: {OverwriteOption}");
@@ -83,14 +82,7 @@ namespace PerkinElmerSP2CSV
             }
         }
 
-        static string GetOutputFilePath(string inputPath)
-        {
-            return inputPath + ".csv";
-        }
+        static string GetOutputFilePath(string inputPath) => inputPath + ".csv";
 
-        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
