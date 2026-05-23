@@ -27,6 +27,7 @@ namespace PerkinElmerSP2CSV
             UVInstrumentHeader = 125,
             FLInstrumentHeader = 126
         }
+
         enum Members : short
         {
             DataSetDataType = -29839,
@@ -50,6 +51,7 @@ namespace PerkinElmerSP2CSV
             DataSetVXIRQualHdr = -29821,
             DataSetEventMarkers = -29820
         }
+
         enum TypeCodes : short
         {
             Short = 29999,
@@ -75,11 +77,12 @@ namespace PerkinElmerSP2CSV
             Enum = 29973,
             LogFont = 29972
         }
-        const Blocks MainBlock = Blocks.DSet2DC1DI;
-        const int DataMemberDataOffset = 4;
-        const int SizeofDouble = 8;
 
-        static string ReadString(byte[] data)
+        private const Blocks MainBlock = Blocks.DSet2DC1DI;
+        private const int DataMemberDataOffset = 4;
+        private const int SizeofDouble = 8;
+
+        private static string ReadString(byte[] data)
         {
             try
             {
@@ -93,7 +96,7 @@ namespace PerkinElmerSP2CSV
             }
         }
 
-        static void GetSpectrumWrapper(TypedMemberBlock mb, Spectrum2d sp)
+        private static void GetSpectrumWrapper(TypedMemberBlock mb, Spectrum2d sp)
         {
             switch ((Members)mb.Id)
             {
@@ -144,7 +147,7 @@ namespace PerkinElmerSP2CSV
             }
         }
 
-        static IEnumerable<TypedMemberBlock> ParseMembers(byte[] data)
+        private static IEnumerable<TypedMemberBlock> ParseMembers(byte[] data)
         {
             using MemoryStream ms = new MemoryStream(data);
             using BinaryReader r = new BinaryReader(ms);

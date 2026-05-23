@@ -45,7 +45,11 @@ namespace PerkinElmerSP2CSV
             }
             files = query.ToList();
             Console.WriteLine($"Info: total files to process = {files.Count}.");
-            Parallel.ForEach(files, ProcessFile);
+            //Parallel.ForEach(files, ProcessFile);
+            foreach (var file in files)
+            {
+                ProcessFile(file);
+            }
             Console.WriteLine("Finished.");
         }
 
@@ -55,7 +59,7 @@ namespace PerkinElmerSP2CSV
             {
                 using TextWriter tw = new StreamWriter(GetOutputFilePath(path));
                 using CsvWriter w = new CsvWriter(tw, CsvConf);
-                var d = SupportedProviders[Path.GetExtension(path)].GetData(path);
+                IData d = SupportedProviders[Path.GetExtension(path)].GetData(path);
                 d?.WriteCsv(w);
                 Console.WriteLine(d == null ? $"Warning: no data found in '{path}'." : $"Info: processed file '{path}'.");
             }
