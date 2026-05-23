@@ -92,6 +92,7 @@ namespace PerkinElmerSP2CSV
                 return null;
             }
         }
+
         static void GetSpectrumWrapper(TypedMemberBlock mb, Spectrum2d sp)
         {
             switch ((Members)mb.Id)

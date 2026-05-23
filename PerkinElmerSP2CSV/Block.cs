@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+﻿using System.IO;
 
 namespace PerkinElmerSP2CSV
 {
@@ -25,6 +22,7 @@ namespace PerkinElmerSP2CSV
             Data = file.ReadBytes(len);
             if (Data.Length < len) throw new EndOfStreamException();
         }
+
         public Block(short id, byte[] data)
         {
             Id = id;
