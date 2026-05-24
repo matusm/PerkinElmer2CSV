@@ -13,18 +13,11 @@ namespace PerkinElmerSP2CSV
     /// <seealso cref="Block"/>
     public class BlockFile
     {
-        const string FileSignature = "PEPE";
-        const int DescriptionRecordLength = 40;
+        private const string FileSignature = "PEPE";
+        private const int DescriptionRecordLength = 40;
 
-        public static BlockFile Load(string path)
-        {
-            BlockFile file;
-            using (FileStream s = new FileStream(path, FileMode.Open))
-            {
-                file = new BlockFile(s);
-            }
-            return file;
-        }
+        public string Description { get; }
+        public Block[] Contents { get; }
 
         public BlockFile(FileStream file)
         {
@@ -51,7 +44,14 @@ namespace PerkinElmerSP2CSV
             Contents = blocks.ToArray();
         }
 
-        public string Description { get; }
-        public Block[] Contents { get; }
+        public static BlockFile Load(string path)
+        {
+            BlockFile blockFile;
+            using (FileStream s = new FileStream(path, FileMode.Open))
+            {
+                blockFile = new BlockFile(s);
+            }
+            return blockFile;
+        }
     }
 }

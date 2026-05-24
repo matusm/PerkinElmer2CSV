@@ -38,7 +38,7 @@ namespace PerkinElmerSP2CSV
             {
                 files.AddRange(Directory.GetFiles(Environment.CurrentDirectory));
             }
-            var query = files.Where(x => SupportedProviders.Keys.Contains(Path.GetExtension(x).ToLower()));
+            IEnumerable<string> query = files.Where(x => SupportedProviders.Keys.Contains(Path.GetExtension(x).ToLower()));
             if (!OverwriteOption)
             {
                 query = query.Where(x => !File.Exists(GetOutputFilePath(x)));
@@ -57,6 +57,20 @@ namespace PerkinElmerSP2CSV
         {
             try
             {
+                BlockFile blockFile = null;
+                using (FileStream s = new FileStream(path, FileMode.Open))
+                {
+                    blockFile = new BlockFile(s);
+                }
+                Console.WriteLine($"MM ====================================================");
+                Console.WriteLine($"MM >>> BlockFile description: {blockFile.Description}");
+                Console.WriteLine($"MM >>> Number of Blocks: {blockFile.Contents.Length}");
+                foreach (var block in blockFile.Contents)
+                {
+                    Console.WriteLine($"MM >>> Block ID: {block.Id} with Block data length {block.Data.Length}");
+                }
+                Console.WriteLine($"MM ====================================================");
+
                 using TextWriter tw = new StreamWriter(GetOutputFilePath(path));
                 using CsvWriter w = new CsvWriter(tw, CsvConf);
                 IData d = SupportedProviders[Path.GetExtension(path)].GetData(path);
