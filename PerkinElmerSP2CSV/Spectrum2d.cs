@@ -1,7 +1,6 @@
 ﻿using CsvHelper;
 using At.Matus.MetaData;
 
-
 namespace PerkinElmerSP2CSV
 {
     public class Spectrum2d : IData
@@ -14,7 +13,8 @@ namespace PerkinElmerSP2CSV
         public string LabelY { get; set; }
         public string Name { get; set; }
         public string Alias { get; set; }
-        public double[] PointsY { get; set; }
+        public Point2d[] Points { get; set; }
+        //public double[] PointsY { get; set; }
 
         public void WriteMetaData(CsvWriter w)
         {
@@ -36,13 +36,11 @@ namespace PerkinElmerSP2CSV
             w.WriteField(LabelY);
             w.NextRecord();
             //Rows
-            double x = StartX;
-            foreach (var item in PointsY)
+            foreach (var item in Points)
             {
-                w.WriteField(x);
-                w.WriteField(item);
+                w.WriteField(item.X);
+                w.WriteField(item.Y);
                 w.NextRecord();
-                x += ResolutionX;
             }
         }
     }

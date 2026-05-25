@@ -52,8 +52,9 @@ namespace PerkinElmerSP2CSV
                     sp.MetaData.AddRecord("DataSetInterval", $"{sp.ResolutionX}");
                     break;
                 case Members.DataSetNumPoints:
+                    // there might be an inconsitency with the actual length of the data array!
                     var numPoints = BitConverter.ToInt32(tmb.Data, 0);
-                    sp.PointsY = new double[numPoints];
+                    sp.Points = new Point2d[numPoints];
                     sp.MetaData.AddRecord("DataSetNumPoints", $"{numPoints}");
                     break;
                 case Members.DataSetXAxisLabel:
@@ -67,13 +68,14 @@ namespace PerkinElmerSP2CSV
                 case Members.DataSetData:
                     if (tmb.TypeCode != (short)TypeCodes.CvCoOrdArray)
                         throw new NotSupportedException("Not supported data type for Y data array.");
-                    if (sp.PointsY == null)
-                        sp.PointsY = new double[BitConverter.ToInt32(tmb.Data, 0) / SizeofDouble];
+                    if (sp.Points == null)
+                        sp.Points = new Point2d[BitConverter.ToInt32(tmb.Data, 0) / SizeofDouble];
                     try
                     {
-                        for (int i = 0; i < sp.PointsY.Length; i++)
+                        for (int i = 0; i < sp.Points.Length; i++)
                         {
-                            sp.PointsY[i] = BitConverter.ToDouble(tmb.Data, DataMemberDataOffset + i * SizeofDouble);
+                            double y = BitConverter.ToDouble(tmb.Data, DataMemberDataOffset + i * SizeofDouble);
+                            sp.Points[i] = new Point2d { X = sp.StartX + i * sp.ResolutionX, Y = y };
                         }
                     }
                     catch (ArgumentException)
