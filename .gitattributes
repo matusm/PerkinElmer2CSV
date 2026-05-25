@@ -43,6 +43,8 @@
 #*.jpg   binary
 #*.png   binary
 #*.gif   binary
+#*.tiff  binary
+
 
 ###############################################################################
 # diff behavior for common document formats
