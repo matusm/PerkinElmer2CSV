@@ -1,5 +1,9 @@
 ﻿using CsvHelper;
 using At.Matus.MetaData;
+using System.Collections.Immutable;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PerkinElmerSP2CSV
 {
@@ -18,10 +22,10 @@ namespace PerkinElmerSP2CSV
 
         public void WriteMetaData(CsvWriter w)
         {
-            w.WriteField("MetaDataKey");
-            w.WriteField("MetaDataValue");
-            w.NextRecord();
-            foreach (var item in MetaData.Records)
+            Dictionary<string, string> metaDataRecords = MetaData.Records;
+            Dictionary<string, string> sortedDict = metaDataRecords.OrderBy(kv => kv.Key)
+                     .ToDictionary(kv => kv.Key, kv => kv.Value);
+            foreach (var item in sortedDict)
             {
                 w.WriteField(item.Key);
                 w.WriteField(item.Value);
@@ -31,6 +35,7 @@ namespace PerkinElmerSP2CSV
 
         public void WriteCsv(CsvWriter w)
         {
+            Array.Sort(Points);
             //Header
             w.WriteField(LabelX);
             w.WriteField(LabelY);

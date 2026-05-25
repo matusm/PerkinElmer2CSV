@@ -37,7 +37,7 @@ namespace PerkinElmerSP2CSV
                     byte[] arr = { raw[i+2], raw[i + 3] }; // arr[0]=low, arr[1]=high on little-endian systems
                     short len = BitConverter.ToInt16(arr, 0);
                     string record = Encoding.ASCII.GetString(raw, i+4, len);
-                    records.Add(record);
+                    records.Add(record.Trim('"'));
                 }
             }
             return records.ToArray();
