@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+﻿using System.IO;
 
 namespace PerkinElmerSP2CSV
 {
@@ -13,6 +10,8 @@ namespace PerkinElmerSP2CSV
     /// </summary>
     public class TypedMemberBlock : Block
     {
+        public short TypeCode { get; }
+
         public TypedMemberBlock(BinaryReader file) : base(file.ReadInt16())
         {
             int len = file.ReadInt32();
@@ -20,6 +19,16 @@ namespace PerkinElmerSP2CSV
             Data = file.ReadBytes(len - 2);
         }
 
-        public short TypeCode { get; }
+        public string DumpDataAsHex()
+        {
+            string dataString = string.Empty;
+            foreach (byte b in Data)
+            {
+                dataString += $"{b:X2} ";
+            }
+            return dataString.TrimEnd();
+        }
+
+        public override string ToString() => $"TypedMemberBlock: Id={(Members)Id} dataLength={Data.Length} TypeCode={(TypeCodes)TypeCode}";
     }
 }

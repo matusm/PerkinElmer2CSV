@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PerkinElmerSP2CSV
 {
-    public struct Point2d
+    public struct Point2d : IComparable<Point2d>
     {
         public double X;
         public double Y;
+
+        public int CompareTo(Point2d other) => X.CompareTo(other.X);
     }
 }

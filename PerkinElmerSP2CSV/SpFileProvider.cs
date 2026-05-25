@@ -17,69 +17,12 @@ namespace PerkinElmerSP2CSV
         public static SpFileProvider Instance { get => _instance; }
         public string Extension { get; } = ".sp";
 
-        enum Blocks : short
-        {
-            DSet2DC1DI = 120,
-            HistoryRecord = 121,
-            InstrHdrHistoryRecord = 122,
-            InstrumentHeader = 123,
-            IRInstrumentHeader = 124,
-            UVInstrumentHeader = 125,
-            FLInstrumentHeader = 126
-        }
-        enum Members : short
-        {
-            DataSetDataType = -29839,
-            DataSetAbscissaRange = -29838,
-            DataSetOrdinateRange = -29837,
-            DataSetInterval = -29836,
-            DataSetNumPoints = -29835,
-            DataSetSamplingMethod = -29834,
-            DataSetXAxisLabel = -29833,
-            DataSetYAxisLabel = -29832,
-            DataSetXAxisUnitType = -29831,
-            DataSetYAxisUnitType = -29830,
-            DataSetFileType = -29829,
-            DataSetData = -29828,
-            DataSetName = -29827,
-            DataSetChecksum = -29826,
-            DataSetHistoryRecord = -29825,
-            DataSetInvalidRegion = -29824,
-            DataSetAlias = -29823,
-            DataSetVXIRAccyHdr = -29822,
-            DataSetVXIRQualHdr = -29821,
-            DataSetEventMarkers = -29820
-        }
-        enum TypeCodes : short
-        {
-            Short = 29999,
-            UShort = 29998,
-            Int = 29997,
-            UInt = 29996,
-            Long = 29995,
-            Bool = 29988,
-            Char = 29987,
-            CvCoOrdPoint = 29986,
-            StdFont = 29985,
-            CvCoOrdDimension = 29984,
-            CvCoOrdRectangle = 29983,
-            RGBColor = 29982,
-            CvCoOrdRange = 29981,
-            Double = 29980,
-            CvCoOrd = 29979,
-            ULong = 29978,
-            Peak = 29977,
-            CoOrd = 29976,
-            Range = 29975,
-            CvCoOrdArray = 29974,
-            Enum = 29973,
-            LogFont = 29972
-        }
-        const Blocks MainBlock = Blocks.DSet2DC1DI;
-        const int DataMemberDataOffset = 4;
-        const int SizeofDouble = 8;
+        private const Blocks MainBlock = Blocks.DSet2DC1DI;
+        private const int DataMemberDataOffset = 4;
+        private const int SizeofDouble = 8;
+        private const bool AddEmptyValues = false; // to the metadata
 
-        static string ReadString(byte[] data)
+        private static string ReadString(byte[] data)
         {
             try
             {
@@ -92,38 +35,47 @@ namespace PerkinElmerSP2CSV
                 return null;
             }
         }
-        static void GetSpectrumWrapper(TypedMemberBlock mb, Spectrum2d sp)
+
+        private static void GetSpectrumWrapper(TypedMemberBlock tmb, Spectrum2d sp)
         {
-            switch ((Members)mb.Id)
+            switch ((Members)tmb.Id)
             {
                 case Members.DataSetAbscissaRange:
-                    if (mb.TypeCode != (short)TypeCodes.CvCoOrdRange)
+                    if (tmb.TypeCode != (short)TypeCodes.CvCoOrdRange)
                         throw new NotSupportedException("Not supported data type for X axis range.");
-                    sp.StartX = BitConverter.ToDouble(mb.Data, 0);
-                    sp.EndX = BitConverter.ToDouble(mb.Data, SizeofDouble);
+                    sp.StartX = BitConverter.ToDouble(tmb.Data, 0);
+                    sp.EndX = BitConverter.ToDouble(tmb.Data, SizeofDouble);
+                    sp.MetaData.AddRecord("DataSetAbscissaRange", $"{sp.StartX} {sp.EndX}");
                     break;
                 case Members.DataSetInterval:
-                    sp.ResolutionX = BitConverter.ToDouble(mb.Data, 0);
+                    sp.ResolutionX = BitConverter.ToDouble(tmb.Data, 0);
+                    sp.MetaData.AddRecord("DataSetInterval", $"{sp.ResolutionX}");
                     break;
                 case Members.DataSetNumPoints:
-                    sp.PointsY = new double[BitConverter.ToInt32(mb.Data, 0)];
+                    // there might be an inconsitency with the actual length of the data array!
+                    var numPoints = BitConverter.ToInt32(tmb.Data, 0);
+                    sp.Points = new Point2d[numPoints];
+                    sp.MetaData.AddRecord("DataSetNumPoints", $"{numPoints}");
                     break;
                 case Members.DataSetXAxisLabel:
-                    sp.LabelX = ReadString(mb.Data);
+                    sp.LabelX = ReadString(tmb.Data);
+                    sp.MetaData.AddRecord("DataSetXAxisLabel", $"{sp.LabelX}");
                     break;
                 case Members.DataSetYAxisLabel:
-                    sp.LabelY = ReadString(mb.Data);
+                    sp.LabelY = ReadString(tmb.Data);
+                    sp.MetaData.AddRecord("DataSetYAxisLabel", $"{sp.LabelY}");
                     break;
                 case Members.DataSetData:
-                    if (mb.TypeCode != (short)TypeCodes.CvCoOrdArray)
+                    if (tmb.TypeCode != (short)TypeCodes.CvCoOrdArray)
                         throw new NotSupportedException("Not supported data type for Y data array.");
-                    if (sp.PointsY == null) 
-                        sp.PointsY = new double[BitConverter.ToInt32(mb.Data, 0) / SizeofDouble];
+                    if (sp.Points == null)
+                        sp.Points = new Point2d[BitConverter.ToInt32(tmb.Data, 0) / SizeofDouble];
                     try
                     {
-                        for (int i = 0; i < sp.PointsY.Length; i++)
+                        for (int i = 0; i < sp.Points.Length; i++)
                         {
-                            sp.PointsY[i] = BitConverter.ToDouble(mb.Data, DataMemberDataOffset + i * SizeofDouble);
+                            double y = BitConverter.ToDouble(tmb.Data, DataMemberDataOffset + i * SizeofDouble);
+                            sp.Points[i] = new Point2d { X = sp.StartX + i * sp.ResolutionX, Y = y };
                         }
                     }
                     catch (ArgumentException)
@@ -132,33 +84,45 @@ namespace PerkinElmerSP2CSV
                     }
                     break;
                 case Members.DataSetName:
-                    sp.Name = ReadString(mb.Data);
+                    sp.Name = ReadString(tmb.Data);
+                    sp.MetaData.AddRecord("DataSetName", $"{sp.Name}");
                     break;
                 case Members.DataSetAlias:
-                    sp.Alias = ReadString(mb.Data);
+                    sp.Alias = ReadString(tmb.Data);
+                    sp.MetaData.AddRecord("DataSetAlias", $"{sp.Alias}");
+                    break;
+                case Members.DataSetHistoryRecord:
+                    var histParser = new HistoryRecordParser(tmb);
+                    var histRecords = histParser.GetHistoryRecords();
+                    for (int i = 0; i < histRecords.Length; i++)
+                    {
+                        if(string.IsNullOrWhiteSpace(histRecords[i]) && !AddEmptyValues)
+                            continue;
+                        sp.MetaData.AddRecord($"DataSetHistoryRecord{i:D3}", histRecords[i]);
+                    }   
                     break;
                 default:
-                    Console.WriteLine($"Info: ignoring unknown block id {mb.Id}.");
+                    sp.MetaData.AddRecord($"Ignored_{(Members)tmb.Id}", $"{tmb.DumpDataAsHex()}");
                     break;
             }
         }
 
-        static IEnumerable<TypedMemberBlock> ParseMembers(byte[] data)
+        private static IEnumerable<TypedMemberBlock> ParseMembers(byte[] data)
         {
-            using MemoryStream ms = new MemoryStream(data);
-            using BinaryReader r = new BinaryReader(ms);
-            while (r.BaseStream.Position < r.BaseStream.Length)
+            using MemoryStream memoryStream = new MemoryStream(data);
+            using BinaryReader binaryReader = new BinaryReader(memoryStream);
+            while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
             {
-                TypedMemberBlock b = null;
+                TypedMemberBlock tmb = null;
                 try
                 {
-                    b = new TypedMemberBlock(r);
+                    tmb = new TypedMemberBlock(binaryReader);
                 }
                 catch (EndOfStreamException)
                 {
                     break;
                 }
-                yield return b;
+                yield return tmb;
             }
         }
 

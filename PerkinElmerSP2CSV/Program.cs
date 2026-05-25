@@ -1,10 +1,9 @@
-﻿using CsvHelper;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using CsvHelper.Configuration;
+using System.Reflection;
 
 namespace PerkinElmerSP2CSV
 {
@@ -12,18 +11,16 @@ namespace PerkinElmerSP2CSV
     {
         static readonly Dictionary<string, IFileProvider> SupportedProviders = (new IFileProvider[]
         {
-            SpFileProvider.Instance,
-            PrfFileProvider.Instance
+            SpFileProvider.Instance
         }).ToDictionary(x => x.Extension, x => x);
 
-        static readonly CsvConfiguration CsvConf = new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture);
         static bool RecursiveOption = false;
         static bool OverwriteOption = false;
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Perkin Elmer CSV toolkit v2.1 started!");
-            Console.CancelKeyPress += Console_CancelKeyPress;
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            Console.WriteLine($"Perkin Elmer CSV {Assembly.GetExecutingAssembly().GetName().Version.ToString()} toolkit started!");
             RecursiveOption = args.Contains("-r");
             OverwriteOption = args.Contains("-o");
             Console.WriteLine($"Recursive folder processing: {RecursiveOption}, Overwrite existing CSV: {OverwriteOption}");
@@ -39,14 +36,17 @@ namespace PerkinElmerSP2CSV
             {
                 files.AddRange(Directory.GetFiles(Environment.CurrentDirectory));
             }
-            var query = files.Where(x => SupportedProviders.Keys.Contains(Path.GetExtension(x).ToLower()));
+            IEnumerable<string> query = files.Where(x => SupportedProviders.Keys.Contains(Path.GetExtension(x).ToLower()));
             if (!OverwriteOption)
             {
                 query = query.Where(x => !File.Exists(GetOutputFilePath(x)));
             }
             files = query.ToList();
             Console.WriteLine($"Info: total files to process = {files.Count}.");
-            Parallel.ForEach(files, ProcessFile);
+            foreach (var file in files)
+            {
+                ProcessFile(file);
+            }
             Console.WriteLine("Finished.");
         }
 
@@ -54,11 +54,26 @@ namespace PerkinElmerSP2CSV
         {
             try
             {
-                using TextWriter tw = new StreamWriter(GetOutputFilePath(path));
-                using CsvWriter w = new CsvWriter(tw, CsvConf);
-                var d = SupportedProviders[Path.GetExtension(path)].GetData(path);
-                d?.WriteCsv(w);
-                Console.WriteLine(d == null ? $"Warning: no data found in '{path}'." : $"Info: processed file '{path}'.");
+                BlockFile blockFile = null;
+                using (FileStream s = new FileStream(path, FileMode.Open))
+                {
+                    blockFile = new BlockFile(s);
+                }
+                Console.WriteLine($"==============================================================");
+                Console.WriteLine($">>> BlockFile description: {blockFile.Description}");
+                Console.WriteLine($">>> Number of Blocks: {blockFile.Contents.Length}");
+                foreach (var block in blockFile.Contents)
+                {
+                    Console.WriteLine($">>> Block ID={(Members)block.Id} with Block data length {block.Data.Length}");
+                }
+                Console.WriteLine($"==============================================================");
+
+                using TextWriter textWriter = new StreamWriter(GetOutputFilePath(path));
+                IData data = SupportedProviders[Path.GetExtension(path)].GetData(path);
+                data?.WriteMetaData(textWriter);
+                data?.WriteCsv(textWriter);
+
+                Console.WriteLine(data == null ? $"Warning: no data found in '{path}'." : $"Info: processed file '{path}'.");
             }
             catch (Exception ex)
             {
@@ -83,14 +98,7 @@ namespace PerkinElmerSP2CSV
             }
         }
 
-        static string GetOutputFilePath(string inputPath)
-        {
-            return inputPath + ".csv";
-        }
+        static string GetOutputFilePath(string inputPath) => inputPath + ".csv";
 
-        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+﻿using System.IO;
 
 namespace PerkinElmerSP2CSV
 {
@@ -13,6 +10,9 @@ namespace PerkinElmerSP2CSV
     /// <seealso cref="TypedMemberBlock"/>
     public class Block
     {
+        public short Id { get; }
+        public byte[] Data { get; protected set; }
+
         protected Block(short id) 
         {
             Id = id;
@@ -25,13 +25,11 @@ namespace PerkinElmerSP2CSV
             Data = file.ReadBytes(len);
             if (Data.Length < len) throw new EndOfStreamException();
         }
+
         public Block(short id, byte[] data)
         {
             Id = id;
             Data = data;
         }
-
-        public short Id { get; }
-        public byte[] Data { get; protected set; }
     }
 }

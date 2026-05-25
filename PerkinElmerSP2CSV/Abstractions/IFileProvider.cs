@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CsvHelper;
-
-namespace PerkinElmerSP2CSV
+﻿namespace PerkinElmerSP2CSV
 {
     public interface IFileProvider
     {
