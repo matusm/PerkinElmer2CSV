@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace PerkinElmerSP2CSV
 {
@@ -19,7 +20,7 @@ namespace PerkinElmerSP2CSV
         static void Main(string[] args)
         {
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            Console.WriteLine("Perkin Elmer CSV toolkit started!");
+            Console.WriteLine($"Perkin Elmer CSV {Assembly.GetExecutingAssembly().GetName().Version.ToString()} toolkit started!");
             RecursiveOption = args.Contains("-r");
             OverwriteOption = args.Contains("-o");
             Console.WriteLine($"Recursive folder processing: {RecursiveOption}, Overwrite existing CSV: {OverwriteOption}");
@@ -58,21 +59,21 @@ namespace PerkinElmerSP2CSV
                 {
                     blockFile = new BlockFile(s);
                 }
-                Console.WriteLine($"MM ====================================================");
-                Console.WriteLine($"MM >>> BlockFile description: {blockFile.Description}");
-                Console.WriteLine($"MM >>> Number of Blocks: {blockFile.Contents.Length}");
+                Console.WriteLine($"==============================================================");
+                Console.WriteLine($">>> BlockFile description: {blockFile.Description}");
+                Console.WriteLine($">>> Number of Blocks: {blockFile.Contents.Length}");
                 foreach (var block in blockFile.Contents)
                 {
-                    Console.WriteLine($"MM >>> Block ID: {(Members)block.Id} with Block data length {block.Data.Length}");
+                    Console.WriteLine($">>> Block ID={(Members)block.Id} with Block data length {block.Data.Length}");
                 }
-                Console.WriteLine($"MM ====================================================");
+                Console.WriteLine($"==============================================================");
 
                 using TextWriter textWriter = new StreamWriter(GetOutputFilePath(path));
-                IData d = SupportedProviders[Path.GetExtension(path)].GetData(path);
-                d?.WriteMetaData(textWriter);
-                d?.WriteCsv(textWriter);
+                IData data = SupportedProviders[Path.GetExtension(path)].GetData(path);
+                data?.WriteMetaData(textWriter);
+                data?.WriteCsv(textWriter);
 
-                Console.WriteLine(d == null ? $"Warning: no data found in '{path}'." : $"Info: processed file '{path}'.");
+                Console.WriteLine(data == null ? $"Warning: no data found in '{path}'." : $"Info: processed file '{path}'.");
             }
             catch (Exception ex)
             {
