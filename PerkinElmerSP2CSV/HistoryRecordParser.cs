@@ -34,16 +34,15 @@ namespace PerkinElmerSP2CSV
                 if (raw[i] == 0x23 && raw[i + 1] == 0x75) // #u is the start of a new record
                 {
                     // get the length of the current record (the 2 bytes after #u)
-                    byte[] arr = { raw[i+2], raw[i + 3] }; // arr[0]=low, arr[1]=high on little-endian systems
+                    byte[] arr = { raw[i + 2], raw[i + 3] }; // arr[0]=low, arr[1]=high on little-endian systems
                     short len = BitConverter.ToInt16(arr, 0);
-                    string record = Encoding.ASCII.GetString(raw, i+4, len);
-                    records.Add(record.Trim('"'));
+                    string record = Encoding.ASCII.GetString(raw, i + 4, len);
+                    records.Add(record.Trim().Trim('"'));
                 }
             }
             return records.ToArray();
         }
 
         private readonly TypedMemberBlock _tmb;
-
     }
 }

@@ -1,11 +1,8 @@
-﻿using CsvHelper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using CsvHelper.Configuration;
 
 namespace PerkinElmerSP2CSV
 {
@@ -14,15 +11,14 @@ namespace PerkinElmerSP2CSV
         static readonly Dictionary<string, IFileProvider> SupportedProviders = (new IFileProvider[]
         {
             SpFileProvider.Instance
-            //PrfFileProvider.Instance
         }).ToDictionary(x => x.Extension, x => x);
 
-        static readonly CsvConfiguration CsvConf = new CsvConfiguration(CultureInfo.InvariantCulture);
         static bool RecursiveOption = false;
         static bool OverwriteOption = false;
 
         static void Main(string[] args)
         {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             Console.WriteLine("Perkin Elmer CSV toolkit started!");
             RecursiveOption = args.Contains("-r");
             OverwriteOption = args.Contains("-o");
@@ -46,7 +42,6 @@ namespace PerkinElmerSP2CSV
             }
             files = query.ToList();
             Console.WriteLine($"Info: total files to process = {files.Count}.");
-            //Parallel.ForEach(files, ProcessFile);
             foreach (var file in files)
             {
                 ProcessFile(file);
@@ -68,15 +63,14 @@ namespace PerkinElmerSP2CSV
                 Console.WriteLine($"MM >>> Number of Blocks: {blockFile.Contents.Length}");
                 foreach (var block in blockFile.Contents)
                 {
-                    Console.WriteLine($"MM >>> Block ID: {block.Id} with Block data length {block.Data.Length}");
+                    Console.WriteLine($"MM >>> Block ID: {(Members)block.Id} with Block data length {block.Data.Length}");
                 }
                 Console.WriteLine($"MM ====================================================");
 
-                using TextWriter tw = new StreamWriter(GetOutputFilePath(path));
-                using CsvWriter w = new CsvWriter(tw, CsvConf);
+                using TextWriter textWriter = new StreamWriter(GetOutputFilePath(path));
                 IData d = SupportedProviders[Path.GetExtension(path)].GetData(path);
-                d?.WriteMetaData(w);
-                d?.WriteCsv(w);
+                d?.WriteMetaData(textWriter);
+                d?.WriteCsv(textWriter);
 
                 Console.WriteLine(d == null ? $"Warning: no data found in '{path}'." : $"Info: processed file '{path}'.");
             }

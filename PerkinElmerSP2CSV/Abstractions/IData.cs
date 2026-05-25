@@ -1,10 +1,10 @@
-﻿using CsvHelper;
+﻿using System.IO;
 
 namespace PerkinElmerSP2CSV
 {
     public interface IData
     {
-        public void WriteCsv(CsvWriter w);
-        public void WriteMetaData(CsvWriter w);
+        public void WriteCsv(TextWriter w);
+        public void WriteMetaData(TextWriter w);
     }
 }

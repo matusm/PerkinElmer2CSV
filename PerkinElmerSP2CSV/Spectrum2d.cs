@@ -1,9 +1,8 @@
-﻿using CsvHelper;
-using At.Matus.MetaData;
-using System.Collections.Immutable;
+﻿using At.Matus.MetaData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 namespace PerkinElmerSP2CSV
 {
@@ -18,34 +17,27 @@ namespace PerkinElmerSP2CSV
         public string Name { get; set; }
         public string Alias { get; set; }
         public Point2d[] Points { get; set; }
-        //public double[] PointsY { get; set; }
 
-        public void WriteMetaData(CsvWriter w)
+        public void WriteMetaData(TextWriter w)
         {
             Dictionary<string, string> metaDataRecords = MetaData.Records;
             Dictionary<string, string> sortedDict = metaDataRecords.OrderBy(kv => kv.Key)
                      .ToDictionary(kv => kv.Key, kv => kv.Value);
             foreach (var item in sortedDict)
             {
-                w.WriteField(item.Key);
-                w.WriteField(item.Value);
-                w.NextRecord();
+                w.WriteLine($"# {item.Key} = {item.Value}");
             }
         }
 
-        public void WriteCsv(CsvWriter w)
+        public void WriteCsv(TextWriter w)
         {
             Array.Sort(Points);
             //Header
-            w.WriteField(LabelX);
-            w.WriteField(LabelY);
-            w.NextRecord();
+            w.WriteLine($"{LabelX},{LabelY}");
             //Rows
             foreach (var item in Points)
             {
-                w.WriteField(item.X);
-                w.WriteField(item.Y);
-                w.NextRecord();
+                w.WriteLine($"{item.X},{item.Y}");
             }
         }
     }
