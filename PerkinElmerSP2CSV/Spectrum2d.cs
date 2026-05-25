@@ -1,9 +1,12 @@
 ﻿using CsvHelper;
+using At.Matus.MetaData;
+
 
 namespace PerkinElmerSP2CSV
 {
     public class Spectrum2d : IData
     {
+        public MeasurementMetaData MetaData { get; set; }
         public double StartX { get; set; }
         public double EndX { get; set; }
         public double ResolutionX { get; set; }
@@ -29,5 +32,6 @@ namespace PerkinElmerSP2CSV
                 x += ResolutionX;
             }
         }
+
     }
 }

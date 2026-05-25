@@ -6,8 +6,6 @@ namespace PerkinElmerSP2CSV
 {
     public class HistoryRecordParser
     {
-        private readonly TypedMemberBlock _tmb;
-
         public HistoryRecordParser(TypedMemberBlock tmb)
         {
             if(tmb.Id != (short)Members.DataSetHistoryRecord)
@@ -17,7 +15,7 @@ namespace PerkinElmerSP2CSV
 
         public string GetHistoryRecordAsString()
         {
-            var records = SplitRecords(_tmb.Data);
+            var records = GetHistoryRecords();
             StringBuilder sb = new StringBuilder();
             foreach (string record in records)
             {
@@ -26,9 +24,10 @@ namespace PerkinElmerSP2CSV
             return sb.ToString();
         }
 
-        private string[] SplitRecords(byte[] raw)
+        public string[] GetHistoryRecords()
         {
             List<string> records = new List<string>();
+            var raw = _tmb.Data;
 
             for (int i = 0; i < raw.Length-4; i++)
             {
@@ -39,28 +38,12 @@ namespace PerkinElmerSP2CSV
                     short len = BitConverter.ToInt16(arr, 0);
                     string record = Encoding.ASCII.GetString(raw, i+4, len);
                     records.Add(record);
- 
                 }
             }
             return records.ToArray();
         }
 
-
-
-
-        private byte[] SubstitudeNonChars(byte[] inpDat)
-        {   List<byte> chars = new List<byte>();
-            foreach (byte b in inpDat)
-            {
-                if (b >= 32 && b <= 126)
-                    chars.Add(b);
-                else
-                    chars.Add((byte)'#'); // '#' for non-printable characters
-            }
-            return chars.ToArray();
-        }
-
-
+        private readonly TypedMemberBlock _tmb;
 
     }
 }

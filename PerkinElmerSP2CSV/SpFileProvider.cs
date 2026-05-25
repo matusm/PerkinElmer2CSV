@@ -44,23 +44,28 @@ namespace PerkinElmerSP2CSV
                         throw new NotSupportedException("Not supported data type for X axis range.");
                     sp.StartX = BitConverter.ToDouble(tmb.Data, 0);
                     sp.EndX = BitConverter.ToDouble(tmb.Data, SizeofDouble);
+                    sp.MetaData.AddRecord("DataSetAbscissaRange", $"{sp.StartX} {sp.EndX}");
                     break;
                 case Members.DataSetInterval:
                     sp.ResolutionX = BitConverter.ToDouble(tmb.Data, 0);
+                    sp.MetaData.AddRecord("DataSetInterval", $"{sp.ResolutionX}");
                     break;
                 case Members.DataSetNumPoints:
                     sp.PointsY = new double[BitConverter.ToInt32(tmb.Data, 0)];
+                    sp.MetaData.AddRecord("DataSetNumPoints", $"{sp.PointsY}");
                     break;
                 case Members.DataSetXAxisLabel:
                     sp.LabelX = ReadString(tmb.Data);
+                    sp.MetaData.AddRecord("DataSetXAxisLabel", $"{sp.LabelX}");
                     break;
                 case Members.DataSetYAxisLabel:
                     sp.LabelY = ReadString(tmb.Data);
+                    sp.MetaData.AddRecord("DataSetYAxisLabel", $"{sp.LabelY}");
                     break;
                 case Members.DataSetData:
                     if (tmb.TypeCode != (short)TypeCodes.CvCoOrdArray)
                         throw new NotSupportedException("Not supported data type for Y data array.");
-                    if (sp.PointsY == null) 
+                    if (sp.PointsY == null)
                         sp.PointsY = new double[BitConverter.ToInt32(tmb.Data, 0) / SizeofDouble];
                     try
                     {
@@ -76,17 +81,22 @@ namespace PerkinElmerSP2CSV
                     break;
                 case Members.DataSetName:
                     sp.Name = ReadString(tmb.Data);
+                    sp.MetaData.AddRecord("DataSetName", $"{sp.Name}");
                     break;
                 case Members.DataSetAlias:
                     sp.Alias = ReadString(tmb.Data);
+                    sp.MetaData.AddRecord("DataSetAlias", $"{sp.Alias}");
                     break;
-                    case Members.DataSetHistoryRecord:
+                case Members.DataSetHistoryRecord:
                     var histParser = new HistoryRecordParser(tmb);
-                    Console.WriteLine($"   >>> {histParser.GetHistoryRecordAsString()}");
+                    var histRecords = histParser.GetHistoryRecords();
+                    for (int i = 0; i < histRecords.Length; i++)
+                    {
+                        sp.MetaData.AddRecord($"DataSetHistoryRecord{i:D3}", histRecords[i]);
+                    }   
                     break;
                 default:
-                    Console.WriteLine($"MM >>> ignoring {tmb}");
-                    Console.WriteLine($"   >>> {tmb.DumpDataAsHex()}");
+                    sp.MetaData.AddRecord($"Ignored_{(Members)tmb.Id}", $"{tmb.DumpDataAsHex()}");
                     break;
             }
         }
