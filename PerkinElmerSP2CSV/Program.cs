@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,13 +17,13 @@ namespace PerkinElmerSP2CSV
             //PrfFileProvider.Instance
         }).ToDictionary(x => x.Extension, x => x);
 
-        static readonly CsvConfiguration CsvConf = new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture);
+        static readonly CsvConfiguration CsvConf = new CsvConfiguration(CultureInfo.InvariantCulture);
         static bool RecursiveOption = false;
         static bool OverwriteOption = false;
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Perkin Elmer CSV toolkit v2.1 started!");
+            Console.WriteLine("Perkin Elmer CSV toolkit started!");
             RecursiveOption = args.Contains("-r");
             OverwriteOption = args.Contains("-o");
             Console.WriteLine($"Recursive folder processing: {RecursiveOption}, Overwrite existing CSV: {OverwriteOption}");
@@ -74,7 +75,9 @@ namespace PerkinElmerSP2CSV
                 using TextWriter tw = new StreamWriter(GetOutputFilePath(path));
                 using CsvWriter w = new CsvWriter(tw, CsvConf);
                 IData d = SupportedProviders[Path.GetExtension(path)].GetData(path);
+                d?.WriteMetaData(w);
                 d?.WriteCsv(w);
+
                 Console.WriteLine(d == null ? $"Warning: no data found in '{path}'." : $"Info: processed file '{path}'.");
             }
             catch (Exception ex)

@@ -20,6 +20,7 @@ namespace PerkinElmerSP2CSV
         private const Blocks MainBlock = Blocks.DSet2DC1DI;
         private const int DataMemberDataOffset = 4;
         private const int SizeofDouble = 8;
+        private const bool AddEmptyValues = false; // to the metadata
 
         private static string ReadString(byte[] data)
         {
@@ -51,8 +52,9 @@ namespace PerkinElmerSP2CSV
                     sp.MetaData.AddRecord("DataSetInterval", $"{sp.ResolutionX}");
                     break;
                 case Members.DataSetNumPoints:
-                    sp.PointsY = new double[BitConverter.ToInt32(tmb.Data, 0)];
-                    sp.MetaData.AddRecord("DataSetNumPoints", $"{sp.PointsY}");
+                    var numPoints = BitConverter.ToInt32(tmb.Data, 0);
+                    sp.PointsY = new double[numPoints];
+                    sp.MetaData.AddRecord("DataSetNumPoints", $"{numPoints}");
                     break;
                 case Members.DataSetXAxisLabel:
                     sp.LabelX = ReadString(tmb.Data);
@@ -92,6 +94,8 @@ namespace PerkinElmerSP2CSV
                     var histRecords = histParser.GetHistoryRecords();
                     for (int i = 0; i < histRecords.Length; i++)
                     {
+                        if(string.IsNullOrWhiteSpace(histRecords[i]) && !AddEmptyValues)
+                            continue;
                         sp.MetaData.AddRecord($"DataSetHistoryRecord{i:D3}", histRecords[i]);
                     }   
                     break;

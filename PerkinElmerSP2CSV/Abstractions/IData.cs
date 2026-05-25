@@ -4,7 +4,7 @@ namespace PerkinElmerSP2CSV
 {
     public interface IData
     {
-        //public string Name { get; }
         public void WriteCsv(CsvWriter w);
+        public void WriteMetaData(CsvWriter w);
     }
 }
