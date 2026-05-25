@@ -13,9 +13,6 @@ namespace PerkinElmerSP2CSV
     /// <seealso cref="Block"/>
     public class BlockFile
     {
-        private const string FileSignature = "PEPE";
-        private const int DescriptionRecordLength = 40;
-
         public string Description { get; }
         public Block[] Contents { get; }
 
@@ -53,5 +50,8 @@ namespace PerkinElmerSP2CSV
             }
             return blockFile;
         }
+
+        private const string FileSignature = "PEPE";
+        private const int DescriptionRecordLength = 40;
     }
 }

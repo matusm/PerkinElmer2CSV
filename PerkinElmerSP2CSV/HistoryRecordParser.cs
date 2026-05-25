@@ -7,7 +7,6 @@ namespace PerkinElmerSP2CSV
     public class HistoryRecordParser
     {
         private readonly TypedMemberBlock _tmb;
-        private byte[] _data => _tmb.Data;
 
         public HistoryRecordParser(TypedMemberBlock tmb)
         {

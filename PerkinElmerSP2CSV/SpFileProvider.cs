@@ -17,7 +17,6 @@ namespace PerkinElmerSP2CSV
         public static SpFileProvider Instance { get => _instance; }
         public string Extension { get; } = ".sp";
 
-
         private const Blocks MainBlock = Blocks.DSet2DC1DI;
         private const int DataMemberDataOffset = 4;
         private const int SizeofDouble = 8;
@@ -94,20 +93,20 @@ namespace PerkinElmerSP2CSV
 
         private static IEnumerable<TypedMemberBlock> ParseMembers(byte[] data)
         {
-            using MemoryStream ms = new MemoryStream(data);
-            using BinaryReader r = new BinaryReader(ms);
-            while (r.BaseStream.Position < r.BaseStream.Length)
+            using MemoryStream memoryStream = new MemoryStream(data);
+            using BinaryReader binaryReader = new BinaryReader(memoryStream);
+            while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
             {
-                TypedMemberBlock b = null;
+                TypedMemberBlock tmb = null;
                 try
                 {
-                    b = new TypedMemberBlock(r);
+                    tmb = new TypedMemberBlock(binaryReader);
                 }
                 catch (EndOfStreamException)
                 {
                     break;
                 }
-                yield return b;
+                yield return tmb;
             }
         }
 

@@ -10,6 +10,9 @@ namespace PerkinElmerSP2CSV
     /// <seealso cref="TypedMemberBlock"/>
     public class Block
     {
+        public short Id { get; }
+        public byte[] Data { get; protected set; }
+
         protected Block(short id) 
         {
             Id = id;
@@ -28,8 +31,5 @@ namespace PerkinElmerSP2CSV
             Id = id;
             Data = data;
         }
-
-        public short Id { get; }
-        public byte[] Data { get; protected set; }
     }
 }

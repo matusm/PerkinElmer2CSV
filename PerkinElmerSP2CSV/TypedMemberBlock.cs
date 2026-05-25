@@ -29,8 +29,6 @@ namespace PerkinElmerSP2CSV
             return dataString.TrimEnd();
         }
 
-        public string DumpDataAsString() => System.Text.Encoding.UTF8.GetString(Data);
-
         public override string ToString() => $"TypedMemberBlock: Id={(Members)Id} dataLength={Data.Length} TypeCode={(TypeCodes)TypeCode}";
     }
 }
