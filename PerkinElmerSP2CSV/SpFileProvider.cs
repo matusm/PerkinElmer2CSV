@@ -94,12 +94,17 @@ namespace PerkinElmerSP2CSV
                 case Members.DataSetHistoryRecord:
                     var histParser = new HistoryRecordParser(tmb);
                     var histRecords = histParser.GetHistoryRecords();
+                    var histRecordsAsObjects = histParser.GetHistoryRecordsAsObjects();
                     for (int i = 0; i < histRecords.Length; i++)
                     {
                         if(string.IsNullOrWhiteSpace(histRecords[i]) && !AddEmptyValues)
                             continue;
                         sp.MetaData.AddRecord($"DataSetHistoryRecord{i:D3}", histRecords[i]);
-                    }   
+                    }
+                    for (int i = 0; i < histRecordsAsObjects.Length; i++)
+                    {
+                        sp.MetaData.AddRecord($"DEBUG{i:D3}", histRecordsAsObjects[i].ToString());
+                    }
                     break;
                 default:
                     sp.MetaData.AddRecord($"Ignored_{(Members)tmb.Id}", $"{tmb.DumpDataAsHex()}");
