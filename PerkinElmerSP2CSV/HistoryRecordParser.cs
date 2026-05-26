@@ -56,7 +56,8 @@ namespace PerkinElmerSP2CSV
                     }
                     historyRecord.RecordText = record;
                     historyRecord.RecordLength = len;
-                    historyRecord.Id = (id1 + 29839); // to make the id positive
+                    historyRecord.TitleCode = (id1 + 29839); // to make the id positive
+                    historyRecord.Offset = i - 6;
                     records.Add(historyRecord);
                 }
             }
@@ -86,13 +87,14 @@ namespace PerkinElmerSP2CSV
 
     public class HistoryRecord
     {
-        public int Id { get; set; }
+        public int TitleCode { get; set; } // positive definite version
         public string RecordText { get; set; }
         public short RecordLength { get; set; }
+        public int Offset { get; set; } // within the byte array of the DataSetHistoryRecord TypedMemberBlock
 
         public override string ToString()
         {
-            return $"Id: {Id,3}, RecordLength: {RecordLength,3}, Record: {RecordText}";
+            return $"Id: {TitleCode,3}, RecordLength: {RecordLength,3}, Offset: {Offset,4}, Record: {RecordText}";
         }
     }
 }
