@@ -15,17 +15,6 @@ namespace PerkinElmerSP2CSV
             _tmb = tmb;
         }
 
-        public string GetHistoryRecordAsString()
-        {
-            var records = GetHistoryRecords();
-            StringBuilder sb = new StringBuilder();
-            foreach (string record in records)
-            {
-                sb.AppendLine($"'{record}'");
-            }
-            return sb.ToString();
-        }
-
         public HistoryRecord[] GetHistoryRecordsAsObjects()
         {
             List<HistoryRecord> records = new List<HistoryRecord>();
@@ -66,20 +55,11 @@ namespace PerkinElmerSP2CSV
 
         public string[] GetHistoryRecords()
         {
-            List<string> records = new List<string>();
-            var raw = _tmb.Data;
-
-            for (int i = 0; i < raw.Length-4; i++)
-            {
-                if (raw[i] == 0x23 && raw[i + 1] == 0x75) // #u is the start of a new record
-                {
-                    // get the length of the current record (the 2 bytes after #u)
-                    short len = BitConverter.ToInt16(new byte[] { raw[i + 2], raw[i + 3] }, 0);
-                    string record = Encoding.ASCII.GetString(raw, i + 4, len);
-                    records.Add(record.Trim().Trim('"'));
-                }
-            }
-            return records.ToArray();
+            var historyRecords = GetHistoryRecordsAsObjects();
+            string[] records = new string[historyRecords.Length];
+            for (int i = 0; i < historyRecords.Length; i++)
+                records[i] = historyRecords[i].RecordText.Trim().Trim('"');
+            return records;
         }
 
         private readonly TypedMemberBlock _tmb;

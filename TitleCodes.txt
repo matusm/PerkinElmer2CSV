@@ -1,14 +1,14 @@
 # History
   1	Analyst, User
   2	Modification
-  3	Modification date
+  3	ModificationDate
   4	Parameters
-  5	Description
+  5	SampleDescription
 
 # Instrument
-140	Model
-141	Serial Number
-142	Software Revision
+140	InstrumentModel
+141	InstrumentSerialNumber
+142	InstrumentSoftwareRevision
 
 210	SlitWidth
 213	Lamps
