@@ -32,6 +32,12 @@ namespace PerkinElmerSP2CSV
             var raw = _tmb.Data;
             for (int i = 6; i < raw.Length - 4; i++)
             {
+                // The separator between records consists of the two bytes 0x23 0x75 "#u" followed by the record length (2 bytes) and the record text (len bytes).
+                // The separator also includes 3 short integers (6 bytes) before the "#u".
+                // The first short integer (id1) is considered as the actual record id,
+                // the second short integer (id2) is the length of the record text plus 4,
+                // and the third short integer (id3) is always 0.
+
                 if (raw[i] == 0x23 && raw[i + 1] == 0x75) // #u is the start of a new record
                 {
                     var historyRecord = new HistoryRecord();
@@ -41,7 +47,6 @@ namespace PerkinElmerSP2CSV
                     short id1 = BitConverter.ToInt16(new byte[] { raw[i - 6], raw[i - 5] }, 0);
                     short id2 = BitConverter.ToInt16(new byte[] { raw[i - 4], raw[i - 3] }, 0);
                     short id3 = BitConverter.ToInt16(new byte[] { raw[i - 2], raw[i - 1] }, 0);
-
                     if(checkConsistency)
                     {
                         if(id3!=0)
@@ -49,10 +54,9 @@ namespace PerkinElmerSP2CSV
                         if(id2-len != 4)
                             throw new ArgumentException($"Inconsistent record length for record '{record}' with id1: {id1}, id2: {id2}, id3: {id3} and len: {len}");
                     }
-
                     historyRecord.RecordText = record;
                     historyRecord.RecordLength = len;
-                    historyRecord.Id = (id1 + 29839);
+                    historyRecord.Id = (id1 + 29839); // to make the id positive
                     records.Add(historyRecord);
                 }
             }
