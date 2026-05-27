@@ -1,38 +1,38 @@
-# AttenuatorsUsed = S:100 R:0.1
+# OperatorName = Michael Matus
+# Modification = Created as New Dataset
+# ModificationDateTime = fri aug 26 09:42:15 2022 Coordinated Universal Time (GMT+0:00)
+# Parameters = 
+# SampleDescription = MM04 BG20 535341 d=2.0 mm Q50mm
+# InstrumentModel = Lambda 1050+
+# InstrumentSerialNumber = 1060L2011032
+# InstrumentSoftwareRevision = PerkinElmer UV WinLab 7.1.0.68 / 2.02.11 Lambda 900 UV/VIS/NIR, May 23 2018 11:23:04
+# SlitWidth = 3350/servo 1800.8/1 860.8/1
+# LampsUsed = UV/VIS
+# InstrumentAccessories = CommonBeamDepol,RBeamAtt,SBeamAtt,uv/vis/nir detector, TDS WB InGaAs Detector
+# UvVisSlitMode = Program
+# NirSlitMode = Program
+# NirSlitWidth = 3350/servo 1800.8/1 860.8/1
+# UvVisIntegrationTime = 3350/2 1800.8/10 860.8/1
+# NirIntegrationTime = 3350/2 1800.8/10 860.8/1
+# NirDetectorGain = 3350/1.00 1800.8/2.00
+# DetectorChangeAt = 1800.8 860.8
+# SampleBeamPosition = Front
 # CommonBeamDepolarizer = off
-# DataSetAbscissaRange = 900 220
-# DataSetAlias = MM04_008.Sample
+# AttenuatorsUsed = S:100 R:0.1
 # DataSetChecksum = 0
 # DataSetDataType = 16
-# DataSetFileType = 0
-# DataSetInterval = -1
 # DataSetName = MM04_008.Sample
-# DataSetNumPoints = 681
+# DataSetAbscissaRange = 220 900
 # DataSetOrdinateRange = -101525.0521 121128.2471
-# DataSetSamplingMethod = 0
+# DataSetInterval = -1
+# DataSetNumPoints = 681
 # DataSetXAxisLabel = nm
 # DataSetXAxisUnitType = 11
 # DataSetYAxisLabel = %T
 # DataSetYAxisUnitType = 2
-# DetectorChangeAt = 1800.8 860.8
-# InstrumentAccessories = CommonBeamDepol,RBeamAtt,SBeamAtt,uv/vis/nir detector, TDS WB InGaAs Detector
-# InstrumentModel = Lambda 1050+
-# InstrumentSerialNumber = 1060L2011032
-# InstrumentSoftwareRevision = PerkinElmer UV WinLab 7.1.0.68 / 2.02.11 Lambda 900 UV/VIS/NIR, May 23 2018 11:23:04
-# LampsUsed = UV/VIS
-# Modification = Created as New Dataset
-# ModificationDateTime = fri aug 26 09:42:15 2022 Coordinated Universal Time (GMT+0:00)
-# NirDetectorGain = 3350/1.00 1800.8/2.00
-# NirIntegrationTime = 3350/2 1800.8/10 860.8/1
-# NirSlitMode = Program
-# NirSlitWidth = 3350/servo 1800.8/1 860.8/1
-# OperatorName = Michael Matus
-# Parameters = 
-# SampleBeamPosition = Front
-# SampleDescription = MM04 BG20 535341 d=2.0 mm Q50mm
-# SlitWidth = 3350/servo 1800.8/1 860.8/1
-# UvVisIntegrationTime = 3350/2 1800.8/10 860.8/1
-# UvVisSlitMode = Program
+# DataSetSamplingMethod = 0
+# DataSetFileType = 0
+# DataSetAlias = MM04_008.Sample
 nm,%T
 220,2.835562000424293E-05
 221,3.0501369719130194E-05

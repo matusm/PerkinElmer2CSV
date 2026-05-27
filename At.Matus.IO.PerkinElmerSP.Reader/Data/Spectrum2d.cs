@@ -1,12 +1,11 @@
 ﻿using At.Matus.MetaData;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
 
-namespace PerkinElmerSP2CSV
+namespace At.Matus.IO.PerkinElmerSP.Reader
 {
-    public class Spectrum2d : IData
+    public class Spectrum2d
     {
         public MeasurementMetaData MetaData { get; set; } = new MeasurementMetaData();
         public double StartX { get; set; }
@@ -41,4 +40,5 @@ namespace PerkinElmerSP2CSV
             }
         }
     }
+
 }

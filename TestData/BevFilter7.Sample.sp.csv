@@ -1,38 +1,38 @@
-# AttenuatorsUsed = S:100 R:100
+# OperatorName = Michael Matus
+# Modification = Created as New Dataset
+# ModificationDateTime = mon aug 22 09:12:11 2022 Coordinated Universal Time (GMT+0:00)
+# Parameters = 
+# SampleDescription = BEV68 NG11 Z5148 d=2.4 mm Q50mm, detector change
+# InstrumentModel = Lambda 1050+
+# InstrumentSerialNumber = 1060L2011032
+# InstrumentSoftwareRevision = PerkinElmer UV WinLab 7.1.0.68 / 2.02.11 Lambda 900 UV/VIS/NIR, May 23 2018 11:23:04
+# SlitWidth = 3350/servo 1800.8/servo 860.8/1
+# LampsUsed = UV/VIS
+# InstrumentAccessories = CommonBeamDepol,RBeamAtt,SBeamAtt,uv/vis/nir detector, TDS WB InGaAs Detector
+# UvVisSlitMode = Program
+# NirSlitMode = Program
+# NirSlitWidth = 3350/servo 1800.8/servo 860.8/1
+# UvVisIntegrationTime = 3350/2 1800.8/1 860.8/1
+# NirIntegrationTime = 3350/2 1800.8/1 860.8/1
+# NirDetectorGain = 3350/1.00 1800.8/1.00
+# DetectorChangeAt = 1800.8 860.8
+# SampleBeamPosition = Front
 # CommonBeamDepolarizer = off
-# DataSetAbscissaRange = 900 800
-# DataSetAlias = BevFilter7.Sample
+# AttenuatorsUsed = S:100 R:100
 # DataSetChecksum = 0
 # DataSetDataType = 16
-# DataSetFileType = 0
-# DataSetInterval = -1
 # DataSetName = BevFilter7.Sample
-# DataSetNumPoints = 101
+# DataSetAbscissaRange = 800 900
 # DataSetOrdinateRange = 0 50.60359596927214
-# DataSetSamplingMethod = 0
+# DataSetInterval = -1
+# DataSetNumPoints = 101
 # DataSetXAxisLabel = nm
 # DataSetXAxisUnitType = 11
 # DataSetYAxisLabel = %T
 # DataSetYAxisUnitType = 2
-# DetectorChangeAt = 1800.8 860.8
-# InstrumentAccessories = CommonBeamDepol,RBeamAtt,SBeamAtt,uv/vis/nir detector, TDS WB InGaAs Detector
-# InstrumentModel = Lambda 1050+
-# InstrumentSerialNumber = 1060L2011032
-# InstrumentSoftwareRevision = PerkinElmer UV WinLab 7.1.0.68 / 2.02.11 Lambda 900 UV/VIS/NIR, May 23 2018 11:23:04
-# LampsUsed = UV/VIS
-# Modification = Created as New Dataset
-# ModificationDateTime = mon aug 22 09:12:11 2022 Coordinated Universal Time (GMT+0:00)
-# NirDetectorGain = 3350/1.00 1800.8/1.00
-# NirIntegrationTime = 3350/2 1800.8/1 860.8/1
-# NirSlitMode = Program
-# NirSlitWidth = 3350/servo 1800.8/servo 860.8/1
-# OperatorName = Michael Matus
-# Parameters = 
-# SampleBeamPosition = Front
-# SampleDescription = BEV68 NG11 Z5148 d=2.4 mm Q50mm, detector change
-# SlitWidth = 3350/servo 1800.8/servo 860.8/1
-# UvVisIntegrationTime = 3350/2 1800.8/1 860.8/1
-# UvVisSlitMode = Program
+# DataSetSamplingMethod = 0
+# DataSetFileType = 0
+# DataSetAlias = BevFilter7.Sample
 nm,%T
 800,50.60359596927214
 801,50.513945474525634

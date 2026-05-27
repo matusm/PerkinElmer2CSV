@@ -1,25 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Text;
 
-namespace PerkinElmerSP2CSV
+namespace At.Matus.IO.PerkinElmerSP.Reader
 {
     /// <summary>
     /// Based on the code for Matlab(R) by Stephen Westlake and Seer Green from Perkin Elmer (2007)
     /// Adapted for OOP and C#.NET by Kutukov Pavel, 2022
     /// </summary>
-    public class SpFileProvider : IFileProvider
+    public class SpFileTool
     {
-        private static readonly SpFileProvider _instance = new SpFileProvider();
-        private SpFileProvider() { }
-        public static SpFileProvider Instance { get => _instance; }
-        public string Extension { get; } = ".sp";
+        public string Extension => ".sp";
 
-        private const Blocks mainBlock = Blocks.DSet2DC1DI;
-        private const int DataMemberDataOffset = 4;
-        private const int SizeofDouble = 8;
+        public Spectrum2d GetData(string path)
+        {
+            if (!BitConverter.IsLittleEndian)
+                throw new NotSupportedException("BigEndian architectures are not supported (yet).");
+            Block main = BlockFile.Load(path).Contents.FirstOrDefault(x => x.Id == (short)mainBlock);
+            if (main == null)
+                throw new NotSupportedException($"This SP file doesn't contain a {Enum.GetName(typeof(Blocks), mainBlock)} block.");
+            var spec = new Spectrum2d();
+            foreach (var item in ParseMembers(main.Data))
+            {
+                GetSpectrumWrapper(item, spec);
+            }
+            return spec;
+        }
 
         private static string ReadString(byte[] data)
         {
@@ -43,7 +51,7 @@ namespace PerkinElmerSP2CSV
                     if (tmb.TypeCode != (short)TypeCodes.CvCoOrdRange)
                         throw new NotSupportedException("Not supported data type for X axis range.");
                     sp.StartX = BitConverter.ToDouble(tmb.Data, 0);
-                    sp.EndX = BitConverter.ToDouble(tmb.Data, SizeofDouble);
+                    sp.EndX = BitConverter.ToDouble(tmb.Data, sizeOfDouble);
                     sp.MetaData.AddRecord("DataSetAbscissaRange", $"{sp.EndX} {sp.StartX}");
                     break;
                 case Members.DataSetInterval:
@@ -68,12 +76,12 @@ namespace PerkinElmerSP2CSV
                     if (tmb.TypeCode != (short)TypeCodes.CvCoOrdArray)
                         throw new NotSupportedException("Not supported data type for Y data array.");
                     if (sp.Points == null)
-                        sp.Points = new Point2d[BitConverter.ToInt32(tmb.Data, 0) / SizeofDouble];
+                        sp.Points = new Point2d[BitConverter.ToInt32(tmb.Data, 0) / sizeOfDouble];
                     try
                     {
                         for (int i = 0; i < sp.Points.Length; i++)
                         {
-                            double y = BitConverter.ToDouble(tmb.Data, DataMemberDataOffset + i * SizeofDouble);
+                            double y = BitConverter.ToDouble(tmb.Data, dataMemberDataOffset + i * sizeOfDouble);
                             sp.Points[i] = new Point2d { X = sp.StartX + i * sp.ResolutionX, Y = y };
                         }
                     }
@@ -117,7 +125,7 @@ namespace PerkinElmerSP2CSV
                     if (tmb.TypeCode != (short)TypeCodes.CvCoOrdRange)
                         throw new NotSupportedException("Not supported data type for DataSetOrdinateRange.");
                     var f1 = BitConverter.ToDouble(tmb.Data, 0);
-                    var f2 = BitConverter.ToDouble(tmb.Data, SizeofDouble);
+                    var f2 = BitConverter.ToDouble(tmb.Data, sizeOfDouble);
                     sp.MetaData.AddRecord("DataSetOrdinateRange", $"{f1} {f2}");
                     break;
                 default:
@@ -128,36 +136,27 @@ namespace PerkinElmerSP2CSV
 
         private static IEnumerable<TypedMemberBlock> ParseMembers(byte[] data)
         {
-            using MemoryStream memoryStream = new MemoryStream(data);
-            using BinaryReader binaryReader = new BinaryReader(memoryStream);
-            while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
+            using (MemoryStream memoryStream = new MemoryStream(data))
+            using (BinaryReader binaryReader = new BinaryReader(memoryStream))
             {
-                TypedMemberBlock tmb = null;
-                try
+                while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
                 {
-                    tmb = new TypedMemberBlock(binaryReader);
+                    TypedMemberBlock tmb = null;
+                    try
+                    {
+                        tmb = new TypedMemberBlock(binaryReader);
+                    }
+                    catch (EndOfStreamException)
+                    {
+                        break;
+                    }
+                    yield return tmb;
                 }
-                catch (EndOfStreamException)
-                {
-                    break;
-                }
-                yield return tmb;
             }
         }
 
-        public IData GetData(string path)
-        {
-            if (!BitConverter.IsLittleEndian)
-                throw new NotSupportedException("BigEndian architectures are not supported (yet).");
-            Block main = BlockFile.Load(path).Contents.FirstOrDefault(x => x.Id == (short)mainBlock);
-            if (main == null)
-                throw new NotSupportedException($"This SP file doesn't contain a {Enum.GetName(typeof(Blocks), mainBlock)} block.");
-            var spec = new Spectrum2d();
-            foreach (var item in ParseMembers(main.Data))
-            {
-                GetSpectrumWrapper(item, spec);
-            }
-            return spec;
-        }
+        private const Blocks mainBlock = Blocks.DSet2DC1DI;
+        private const int dataMemberDataOffset = 4;
+        private const int sizeOfDouble = 8;
     }
 }

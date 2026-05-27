@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
+using System.Text;
 
-namespace PerkinElmerSP2CSV
+namespace At.Matus.IO.PerkinElmerSP.Reader
 {
     /// <summary>
     /// Overall structure:
@@ -30,10 +30,12 @@ namespace PerkinElmerSP2CSV
             List<Block> blocks = new List<Block>(); //Todo: some capacity heuristics based on file length?
             try
             {
-                using BinaryReader r = new BinaryReader(file);
-                while (r.BaseStream.Position < r.BaseStream.Length)
+                using (BinaryReader bReader = new BinaryReader(file))
                 {
-                    blocks.Add(new Block(r));
+                    while (bReader.BaseStream.Position < bReader.BaseStream.Length)
+                    {
+                        blocks.Add(new Block(bReader));
+                    }
                 }
             }
             catch (EndOfStreamException)
