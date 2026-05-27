@@ -13,6 +13,9 @@
     <Reference Include="At.Matus.MetaData">
       <HintPath>..\..\At.Matus.MetaData\At.Matus.MetaData\bin\Release\At.Matus.MetaData.dll</HintPath>
     </Reference>
+    <Reference Include="At.Matus.MetaData.Abstractions">
+      <HintPath>..\..\At.Matus.MetaData.Abstractions\At.Matus.MetaData.Abstractions\bin\Release\At.Matus.MetaData.Abstractions.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <PropertyGroup><!-- Had to set this to true to avoid below error during `docker run`.

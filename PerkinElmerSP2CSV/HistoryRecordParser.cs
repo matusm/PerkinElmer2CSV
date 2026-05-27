@@ -20,7 +20,11 @@ namespace PerkinElmerSP2CSV
             var historyRecords = GetHistoryRecordsAsObjects();
             Dictionary<string, string> records = new Dictionary<string, string>();
             for (int i = 0; i < historyRecords.Length; i++)
-                records.Add(historyRecords[i].TitleCode.ToString(), historyRecords[i].RecordText.Trim().Trim('"'));
+            {
+                int titleCode = historyRecords[i].TitleCode;
+                if (Enum.IsDefined(typeof(HistoryRecordTitles), titleCode))
+                    records[((HistoryRecordTitles)titleCode).ToString()] = historyRecords[i].RecordText.Trim().Trim('"');
+            }
             return records;
         }
 
