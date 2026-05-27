@@ -17,10 +17,9 @@ namespace PerkinElmerSP2CSV
         public static SpFileProvider Instance { get => _instance; }
         public string Extension { get; } = ".sp";
 
-        private const Blocks MainBlock = Blocks.DSet2DC1DI;
+        private const Blocks mainBlock = Blocks.DSet2DC1DI;
         private const int DataMemberDataOffset = 4;
         private const int SizeofDouble = 8;
-        private const bool AddEmptyValues = false; // to the metadata
 
         private static string ReadString(byte[] data)
         {
@@ -93,21 +92,36 @@ namespace PerkinElmerSP2CSV
                     break;
                 case Members.DataSetHistoryRecord:
                     var histParser = new HistoryRecordParser(tmb);
-                    //var histRecords = histParser.GetHistoryRecords();
-                    //var histRecordsAsObjects = histParser.GetHistoryRecordsAsObjects();
-                    //for (int i = 0; i < histRecords.Length; i++)
-                    //{
-                    //    if(string.IsNullOrWhiteSpace(histRecords[i]) && !AddEmptyValues)
-                    //        continue;
-                    //    sp.MetaData.AddRecord($"DataSetHistoryRecord{i:D3}", histRecords[i]);
-                    //}
-                    //for (int i = 0; i < histRecordsAsObjects.Length; i++)
-                    //{
-                    //    sp.MetaData.AddRecord($"DEBUG{i:D3}", histRecordsAsObjects[i].ToString());
-                    //}
                     var histRecordsAsDictionary = histParser.GetHistoryRecordsAsDictionary();
                     sp.MetaData.AddRecords(histRecordsAsDictionary);
                     break;
+                case Members.DataSetDataType:
+                    sp.MetaData.AddRecord("DataSetDataType", $"{BitConverter.ToInt16(tmb.Data, 0)}");
+                    break;
+                case Members.DataSetFileType:
+                    sp.MetaData.AddRecord("DataSetFileType", $"{BitConverter.ToInt16(tmb.Data, 0)}");
+                    break;
+                case Members.DataSetSamplingMethod:
+                    sp.MetaData.AddRecord("DataSetSamplingMethod", $"{BitConverter.ToInt16(tmb.Data, 0)}");
+                    break;
+                case Members.DataSetXAxisUnitType:
+                    sp.MetaData.AddRecord("DataSetXAxisUnitType", $"{BitConverter.ToInt16(tmb.Data, 0)}");
+                    break;
+                case Members.DataSetYAxisUnitType:
+                    sp.MetaData.AddRecord("DataSetYAxisUnitType", $"{BitConverter.ToInt16(tmb.Data, 0)}");
+                    break;
+                case Members.DataSetChecksum:
+                    sp.MetaData.AddRecord("DataSetChecksum", $"{BitConverter.ToInt32(tmb.Data, 0)}");
+                    break;
+                case Members.DataSetOrdinateRange:
+                    if (tmb.TypeCode != (short)TypeCodes.CvCoOrdRange)
+                        throw new NotSupportedException("Not supported data type for DataSetOrdinateRange.");
+                    var f1 = BitConverter.ToDouble(tmb.Data, 0);
+                    var f2 = BitConverter.ToDouble(tmb.Data, SizeofDouble);
+                    sp.MetaData.AddRecord("DataSetOrdinateRange", $"{f1} {f2}");
+                    break;
+
+
                 default:
                     sp.MetaData.AddRecord($"Ignored_{(Members)tmb.Id}", $"{tmb.DumpDataAsHex()}");
                     break;
@@ -137,9 +151,9 @@ namespace PerkinElmerSP2CSV
         {
             if (!BitConverter.IsLittleEndian)
                 throw new NotSupportedException("BigEndian architectures are not supported (yet).");
-            Block main = BlockFile.Load(path).Contents.FirstOrDefault(x => x.Id == (short)MainBlock);
+            Block main = BlockFile.Load(path).Contents.FirstOrDefault(x => x.Id == (short)mainBlock);
             if (main == null)
-                throw new NotSupportedException($"This SP file doesn't contain a {Enum.GetName(typeof(Blocks), MainBlock)} block.");
+                throw new NotSupportedException($"This SP file doesn't contain a {Enum.GetName(typeof(Blocks), mainBlock)} block.");
             var spec = new Spectrum2d();
             foreach (var item in ParseMembers(main.Data))
             {
