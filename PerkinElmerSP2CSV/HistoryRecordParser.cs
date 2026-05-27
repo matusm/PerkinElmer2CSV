@@ -15,6 +15,15 @@ namespace PerkinElmerSP2CSV
             _tmb = tmb;
         }
 
+        public Dictionary<string, string> GetHistoryRecordsAsDictionary()
+        {
+            var historyRecords = GetHistoryRecordsAsObjects();
+            Dictionary<string, string> records = new Dictionary<string, string>();
+            for (int i = 0; i < historyRecords.Length; i++)
+                records.Add(historyRecords[i].TitleCode.ToString(), historyRecords[i].RecordText.Trim().Trim('"'));
+            return records;
+        }
+
         public HistoryRecord[] GetHistoryRecordsAsObjects()
         {
             List<HistoryRecord> records = new List<HistoryRecord>();
