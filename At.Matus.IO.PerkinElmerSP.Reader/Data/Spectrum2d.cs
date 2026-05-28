@@ -17,17 +17,6 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
         public string Alias { get; set; }
         public Point2d[] Points { get; set; }
 
-        public void WriteMetaData(TextWriter w)
-        {
-            Dictionary<string, string> metaDataRecords = MetaData.Records;
-            //Dictionary<string, string> sortedDict = metaDataRecords.OrderBy(kv => kv.Key)
-            //         .ToDictionary(kv => kv.Key, kv => kv.Value);
-            foreach (var item in metaDataRecords)
-            {
-                w.WriteLine($"# {item.Key} = {item.Value}");
-            }
-        }
-
         public void WriteCsv(TextWriter w)
         {
             Array.Sort(Points);
