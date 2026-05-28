@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "At.Matus.IO.PerkinElmerSP.Reader", "At.Matus.IO.PerkinElmerSP.Reader\At.Matus.IO.PerkinElmerSP.Reader.csproj", "{F70BF0B0-896C-44FB-98CA-FEDDF7BB1C32}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sp2Csv", "Sp2Csv\Sp2Csv.csproj", "{5DBCFFF1-C843-4326-AEF8-E3661C105DA4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{F70BF0B0-896C-44FB-98CA-FEDDF7BB1C32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F70BF0B0-896C-44FB-98CA-FEDDF7BB1C32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F70BF0B0-896C-44FB-98CA-FEDDF7BB1C32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DBCFFF1-C843-4326-AEF8-E3661C105DA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DBCFFF1-C843-4326-AEF8-E3661C105DA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DBCFFF1-C843-4326-AEF8-E3661C105DA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DBCFFF1-C843-4326-AEF8-E3661C105DA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
