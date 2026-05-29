@@ -26,7 +26,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
             {
                 GetSpectrumWrapper(item, spec);
             }
-            spec.MetaData.AddRecord("SourceFile", path); // or base name only?
+            spec.MetaData.AddRecord("SourceFile", Path.GetFileName(path));
             return spec;
         }
 

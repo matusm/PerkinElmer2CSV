@@ -33,7 +33,7 @@
 # DataSetSamplingMethod = 0
 # DataSetFileType = 0
 # DataSetAlias = BevFilter7.Sample
-# SourceFile = C:\Users\User\source\repos\PerkinElmer2CSV\TestData\BevFilter7.Sample.sp
+# SourceFile = Transmission1.sp
 nm,%T
 800,50.6035959692721
 801,50.5139454745256

@@ -33,6 +33,7 @@
 # DataSetSamplingMethod = 0
 # DataSetFileType = 0
 # DataSetAlias = Sample51.test
+# SourceFile = BG20.mod1.sp
 nm,A
 220,6.48553462606659
 221,6.49307576833767
