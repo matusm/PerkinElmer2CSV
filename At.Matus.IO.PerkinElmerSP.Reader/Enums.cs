@@ -84,6 +84,8 @@
         UvVisIntegrationTime = 227,
         NirIntegrationTime = 228,
         NirDetectorGain = 230,
+        MonochromatorChangeAt = 236,
+        LampChangeAt = 237,
         DetectorChangeAt = 238,
         SampleBeamPosition = 239,
         CommonBeamDepolarizer = 241,

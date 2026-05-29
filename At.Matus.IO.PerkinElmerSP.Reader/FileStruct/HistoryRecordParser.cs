@@ -70,7 +70,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
                 if (raw[i] == 0x2D && raw[i + 1] == 0x75) // -u is the start of a new mysterious record
                 {
                     var historyRecord = new HistoryRecord();
-                    short val0 = BitConverter.ToInt16(new byte[] { raw[i + 2], raw[i + 3] }, 0);
+                    short val = BitConverter.ToInt16(new byte[] { raw[i + 2], raw[i + 3] }, 0);
                     short id1 = BitConverter.ToInt16(new byte[] { raw[i - 6], raw[i - 5] }, 0);
                     short id2 = BitConverter.ToInt16(new byte[] { raw[i - 4], raw[i - 3] }, 0);
                     short id3 = BitConverter.ToInt16(new byte[] { raw[i - 2], raw[i - 1] }, 0);
@@ -81,11 +81,36 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
                         if (id2 != 8)
                             throw new ArgumentException($"Unexpected value id2 for record with id: {id1}.");
                     }
-                    historyRecord.RecordText = val0.ToString();
+                    historyRecord.RecordText = val.ToString();
                     historyRecord.TitleCode = (id1 + 29839); // to make the id positive
                     historyRecord.RecordLength = 0;
                     historyRecord.Offset = i - 6;
                     historyRecord.Delimiter = "2D75";
+                    records.Add(historyRecord);
+                }
+            }
+            // now find the ".u"-records, which are similar to the "#u"-records
+            for (int i = 6; i < raw.Length - 4; i++)
+            {
+                if (raw[i] == 0x1C && raw[i + 1] == 0x75) // .u is the start of a new mysterious record
+                {
+                    var historyRecord = new HistoryRecord();
+                    double val = BitConverter.ToDouble(new byte[] { raw[i + 2], raw[i + 3], raw[i + 4], raw[i + 5], raw[i + 6], raw[i + 7], raw[i + 8], raw[i + 9] }, 0);
+                    short id1 = BitConverter.ToInt16(new byte[] { raw[i - 6], raw[i - 5] }, 0);
+                    short id2 = BitConverter.ToInt16(new byte[] { raw[i - 4], raw[i - 3] }, 0);
+                    short id3 = BitConverter.ToInt16(new byte[] { raw[i - 2], raw[i - 1] }, 0);
+                    if (ENABLE_VALIDATION)
+                    {
+                        if (id3 != 0)
+                            throw new ArgumentException($"Unexpected non-zero id3 for record with id: {id1}.");
+                        if (id2 != 14)
+                            throw new ArgumentException($"Unexpected value id2 for record with id: {id1}.");
+                    }
+                    historyRecord.RecordText = $"{val:f1}";
+                    historyRecord.TitleCode = (id1 + 29839); // to make the id positive
+                    historyRecord.RecordLength = 0;
+                    historyRecord.Offset = i - 6;
+                    historyRecord.Delimiter = "1C75";
                     records.Add(historyRecord);
                 }
             }
