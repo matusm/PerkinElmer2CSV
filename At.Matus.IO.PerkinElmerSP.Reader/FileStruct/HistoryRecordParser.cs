@@ -28,13 +28,40 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
             return records;
         }
 
+        public UnknownRecord[] GetUnknownRecordsAsObjects()
+        {
+            List<UnknownRecord> records = new List<UnknownRecord>();
+            var raw = _tmb.Data;
+            for (int i = 6; i < raw.Length - 4; i++)
+            {
+                if (raw[i] == 0x2D && raw[i + 1] == 0x75) // -u is the start of a new mysterious record
+                {
+                    var unknownRecord = new UnknownRecord();
+                    short val0 = BitConverter.ToInt16(new byte[] { raw[i + 2], raw[i + 3] }, 0);
+                    byte[] payload = new byte[4];
+                    Array.Copy(raw, i + 4, payload, 0, 4);
+                    short id = BitConverter.ToInt16(new byte[] { raw[i - 6], raw[i - 5] }, 0);
+                    short val2 = BitConverter.ToInt16(new byte[] { raw[i - 4], raw[i - 3] }, 0);
+                    short val3 = BitConverter.ToInt16(new byte[] { raw[i - 2], raw[i - 1] }, 0);
+                    unknownRecord.ID = (id + 29839); // to make the id positive
+                    unknownRecord.Payload = payload;
+                    unknownRecord.Id1 = val0;
+                    unknownRecord.Offset = i - 6;
+                    records.Add(unknownRecord);
+                }
+            }
+            return records.ToArray();
+        }
+
+
         public HistoryRecord[] GetHistoryRecordsAsObjects()
         {
             List<HistoryRecord> records = new List<HistoryRecord>();
             var raw = _tmb.Data;
             for (int i = 6; i < raw.Length - 4; i++)
             {
-                // The separator between records consists of the two bytes 0x23 0x75 "#u" followed by the record length (2 bytes) and the record text (len bytes).
+                // The separator between records consists of the two bytes 0x23 0x75 "#u" followed
+                // by the record length (2 bytes) and the record text (len bytes).
                 // The separator also includes 3 short integers (6 bytes) before the "#u".
                 // The first short integer (id1) is considered as the actual record id,
                 // the second short integer (id2) is the length of the record text plus 4,
@@ -83,11 +110,28 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
         public int TitleCode { get; set; } // positive definite version
         public string RecordText { get; set; }
         public short RecordLength { get; set; }
-        public int Offset { get; set; } // within the byte array of the DataSetHistoryRecord TypedMemberBlock
+        public int Offset { get; set; } // within the byte array of the DataSetHistoryRecord-TypedMemberBlock
 
-        public override string ToString()
-        {
-            return $"Id: {TitleCode,3}, RecordLength: {RecordLength,3}, Offset: {Offset,4}, Record: {RecordText}";
-        }
+        public override string ToString() => $"Id: {TitleCode,3}, RecordLength: {RecordLength,3}, Offset: {Offset,4}, Record: {RecordText}";
     }
+
+    public class UnknownRecord
+    {
+        public int ID { get; set; } // positive definite version
+        public byte[] Payload { get; set; }
+        public short Id1 { get; set; }
+        public short Id2 { get; set; }
+        public short Id3 { get; set; }
+        public int Offset { get; set; } // within the byte array of the DataSetHistoryRecord-TypedMemberBlock
+
+        public override string ToString() => $"Id: {ID,3}, Id1: {Id1,3}, Id2: {Id2,3}, Id3: {Id3,3}, Offset: {Offset,4}, Payload: {DumpDataAsHex(Payload)}";
+
+        private string DumpDataAsHex(byte[] data)
+        {
+            string dataString = string.Empty;
+            foreach (byte b in data)
+                dataString += $"{b:X2} ";
+            return dataString.TrimEnd();
+        }
+    } 
 }

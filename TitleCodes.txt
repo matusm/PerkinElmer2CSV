@@ -14,7 +14,7 @@
 213	Lamps
 218	Accessory
 
-223	?
+223	?	00 00 + 40 bytes
 224	UvVisSlitMode
 225	NirSlitMode
 226	NirSlitWidth
