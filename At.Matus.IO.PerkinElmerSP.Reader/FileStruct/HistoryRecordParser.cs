@@ -6,7 +6,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
 {
     public class HistoryRecordParser
     {
-        private const bool checkConsistency = true;
+        private const bool ENABLE_VALIDATION = true;
 
         public HistoryRecordParser(TypedMemberBlock tmb)
         {
@@ -21,43 +21,16 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
             Dictionary<string, string> records = new Dictionary<string, string>();
             for (int i = 0; i < historyRecords.Length; i++)
             {
-                int titleCode = historyRecords[i].TitleCode;
-                if (Enum.IsDefined(typeof(HistoryRecordTitles), titleCode))
-                    records[((HistoryRecordTitles)titleCode).ToString()] = historyRecords[i].RecordText.Trim().Trim('"');
+                records[historyRecords[i].KeyName] = historyRecords[i].RecordText;//.Trim().Trim('"');
             }
             return records;
         }
-
-        public UnknownRecord[] GetUnknownRecordsAsObjects()
-        {
-            List<UnknownRecord> records = new List<UnknownRecord>();
-            var raw = _tmb.Data;
-            for (int i = 6; i < raw.Length - 4; i++)
-            {
-                if (raw[i] == 0x2D && raw[i + 1] == 0x75) // -u is the start of a new mysterious record
-                {
-                    var unknownRecord = new UnknownRecord();
-                    short val0 = BitConverter.ToInt16(new byte[] { raw[i + 2], raw[i + 3] }, 0);
-                    byte[] payload = new byte[4];
-                    Array.Copy(raw, i + 4, payload, 0, 4);
-                    short id = BitConverter.ToInt16(new byte[] { raw[i - 6], raw[i - 5] }, 0);
-                    short val2 = BitConverter.ToInt16(new byte[] { raw[i - 4], raw[i - 3] }, 0);
-                    short val3 = BitConverter.ToInt16(new byte[] { raw[i - 2], raw[i - 1] }, 0);
-                    unknownRecord.ID = (id + 29839); // to make the id positive
-                    unknownRecord.Payload = payload;
-                    unknownRecord.Id1 = val0;
-                    unknownRecord.Offset = i - 6;
-                    records.Add(unknownRecord);
-                }
-            }
-            return records.ToArray();
-        }
-
 
         public HistoryRecord[] GetHistoryRecordsAsObjects()
         {
             List<HistoryRecord> records = new List<HistoryRecord>();
             var raw = _tmb.Data;
+            // first find the "#u"-records
             for (int i = 6; i < raw.Length - 4; i++)
             {
                 // The separator between records consists of the two bytes 0x23 0x75 "#u" followed
@@ -76,7 +49,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
                     short id1 = BitConverter.ToInt16(new byte[] { raw[i - 6], raw[i - 5] }, 0);
                     short id2 = BitConverter.ToInt16(new byte[] { raw[i - 4], raw[i - 3] }, 0);
                     short id3 = BitConverter.ToInt16(new byte[] { raw[i - 2], raw[i - 1] }, 0);
-                    if (checkConsistency)
+                    if (ENABLE_VALIDATION)
                     {
                         if (id3 != 0)
                             throw new ArgumentException($"Unexpected non-zero id3 for record '{record}' with id1: {id1}, id2: {id2}, id3: {id3} and len: {len}");
@@ -87,6 +60,32 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
                     historyRecord.RecordLength = len;
                     historyRecord.TitleCode = (id1 + 29839); // to make the id positive
                     historyRecord.Offset = i - 6;
+                    historyRecord.Delimiter = "2375";
+                    records.Add(historyRecord);
+                }
+            }
+            // now find the "-u"-records, which are similar to the "#u"-records
+            for (int i = 6; i < raw.Length - 4; i++)
+            {
+                if (raw[i] == 0x2D && raw[i + 1] == 0x75) // -u is the start of a new mysterious record
+                {
+                    var historyRecord = new HistoryRecord();
+                    short val0 = BitConverter.ToInt16(new byte[] { raw[i + 2], raw[i + 3] }, 0);
+                    short id1 = BitConverter.ToInt16(new byte[] { raw[i - 6], raw[i - 5] }, 0);
+                    short id2 = BitConverter.ToInt16(new byte[] { raw[i - 4], raw[i - 3] }, 0);
+                    short id3 = BitConverter.ToInt16(new byte[] { raw[i - 2], raw[i - 1] }, 0);
+                    if (ENABLE_VALIDATION)
+                    {
+                        if (id3 != 0)
+                            throw new ArgumentException($"Unexpected non-zero id3 for record with id: {id1}.");
+                        if (id2 != 8)
+                            throw new ArgumentException($"Unexpected value id2 for record with id: {id1}.");
+                    }
+                    historyRecord.RecordText = val0.ToString();
+                    historyRecord.TitleCode = (id1 + 29839); // to make the id positive
+                    historyRecord.RecordLength = 0;
+                    historyRecord.Offset = i - 6;
+                    historyRecord.Delimiter = "2D75";
                     records.Add(historyRecord);
                 }
             }
@@ -109,29 +108,20 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
     {
         public int TitleCode { get; set; } // positive definite version
         public string RecordText { get; set; }
+        public string KeyName => ToKeyName(TitleCode);
         public short RecordLength { get; set; }
         public int Offset { get; set; } // within the byte array of the DataSetHistoryRecord-TypedMemberBlock
+        public string Delimiter { get; set; } // either "#u" or "-u" (in Hex: 0x23 0x75 or 0x2D 0x75)
+        
+        private string ToKeyName(int code)
+        {
+            if (Enum.IsDefined(typeof(HistoryRecordTitles), code))
+                return ((HistoryRecordTitles)code).ToString();
+            else
+                return $"_UnknownRecord{Delimiter}_ID{code:D3}";
+        }
 
         public override string ToString() => $"Id: {TitleCode,3}, RecordLength: {RecordLength,3}, Offset: {Offset,4}, Record: {RecordText}";
     }
 
-    public class UnknownRecord
-    {
-        public int ID { get; set; } // positive definite version
-        public byte[] Payload { get; set; }
-        public short Id1 { get; set; }
-        public short Id2 { get; set; }
-        public short Id3 { get; set; }
-        public int Offset { get; set; } // within the byte array of the DataSetHistoryRecord-TypedMemberBlock
-
-        public override string ToString() => $"Id: {ID,3}, Id1: {Id1,3}, Id2: {Id2,3}, Id3: {Id3,3}, Offset: {Offset,4}, Payload: {DumpDataAsHex(Payload)}";
-
-        private string DumpDataAsHex(byte[] data)
-        {
-            string dataString = string.Empty;
-            foreach (byte b in data)
-                dataString += $"{b:X2} ";
-            return dataString.TrimEnd();
-        }
-    } 
 }
