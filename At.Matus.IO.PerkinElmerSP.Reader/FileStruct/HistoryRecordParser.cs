@@ -111,15 +111,6 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
             return records.ToArray();
         }
 
-        public string[] GetHistoryRecords()
-        {
-            var historyRecords = GetHistoryRecordsAsObjects();
-            string[] records = new string[historyRecords.Length];
-            for (int i = 0; i < historyRecords.Length; i++)
-                records[i] = historyRecords[i].RecordText.Trim().Trim('"');
-            return records;
-        }
-
         private readonly TypedMemberBlock _tmb;
     }
 
