@@ -82,6 +82,8 @@
     <Compile Include="FileStruct\Block.cs" />
     <Compile Include="FileStruct\BlockFile.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="FileStruct\HistoryRecordEntry.cs" />
+    <Compile Include="FileStruct\HistoryRecordEnums.cs" />
     <Compile Include="FileStruct\HistoryRecordParser.cs" />
     <Compile Include="Data\Point2d.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

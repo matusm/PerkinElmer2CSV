@@ -64,31 +64,5 @@
         LogFont = 29972
     }
 
-    // History record title codes
-    public enum HistoryRecordTitles : int
-    {
-        OperatorName = 1,
-        Modification = 2,
-        ModificationDateTime = 3,
-        Parameters = 4,
-        SampleDescription = 5,
-        InstrumentModel = 140,
-        InstrumentSerialNumber = 141,
-        InstrumentSoftwareRevision = 142,
-        SlitWidth = 210,
-        LampsUsed = 213,
-        InstrumentAccessories = 218,
-        UvVisSlitMode = 224,
-        NirSlitMode = 225,
-        NirSlitWidth = 226,
-        UvVisIntegrationTime = 227,
-        NirIntegrationTime = 228,
-        NirDetectorGain = 230,
-        MonochromatorChangeAt = 236,
-        LampChangeAt = 237,
-        DetectorChangeAt = 238,
-        SampleBeamPosition = 239,
-        CommonBeamDepolarizer = 241,
-        AttenuatorsUsed = 242
-    }
+   
 }
