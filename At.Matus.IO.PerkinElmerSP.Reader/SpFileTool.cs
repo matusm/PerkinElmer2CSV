@@ -12,7 +12,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
     /// </summary>
     public class SpFileTool
     {
-        public string Extension => ".sp";
+        public bool IncludUnknownBlocksInMetaData { get; set; } = false;
 
         public Spectrum2d GetData(string path)
         {
@@ -30,7 +30,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
             return spec;
         }
 
-        private static string ReadString(byte[] data)
+        private string ReadString(byte[] data)
         {
             try
             {
@@ -44,7 +44,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
             }
         }
 
-        private static void GetSpectrumWrapper(TypedMemberBlock tmb, Spectrum2d sp)
+        private void GetSpectrumWrapper(TypedMemberBlock tmb, Spectrum2d sp)
         {
             switch ((Members)tmb.Id)
             {
@@ -99,7 +99,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
                     break;
                 case Members.DataSetHistoryRecord:
                     var histParser = new HistoryRecordParser(tmb);
-                    var histRecordsAsDictionary = histParser.GetHistoryRecordsAsDictionary();
+                    var histRecordsAsDictionary = histParser.GetHistoryRecordsAsDictionary(IncludUnknownBlocksInMetaData);
                     sp.MetaData.AddRecords(histRecordsAsDictionary);
                     break;
                 case Members.DataSetDataType:

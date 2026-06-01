@@ -15,12 +15,15 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
             _tmb = tmb;
         }
 
-        public Dictionary<string, string> GetHistoryRecordsAsDictionary()
+        public Dictionary<string, string> GetHistoryRecordsAsDictionary() => GetHistoryRecordsAsDictionary(false);
+
+        public Dictionary<string, string> GetHistoryRecordsAsDictionary(bool includeUnknowns)
         {
             var historyRecords = GetHistoryRecordsAsObjects();
             Dictionary<string, string> records = new Dictionary<string, string>();
             for (int i = 0; i < historyRecords.Length; i++)
-                records[historyRecords[i].KeyName] = historyRecords[i].RecordText;
+                if(includeUnknowns || historyRecords[i].IsKnownRecord)
+                    records[historyRecords[i].KeyName] = historyRecords[i].RecordText;
             return records;
         }
 
@@ -39,42 +42,46 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
             }
         }
 
-        private HistoryRecordEntry FindEntry(int i, HistoryRecordValueTypes type)
+        private HistoryRecordEntry[] GetHistoryRecordsAsObjects(HistoryRecordValueTypes type)
         {
             var (b1, b2) = GetDelimiterBytes(type);
-            var historyRecord = new HistoryRecordEntry();
-            if (_tmb.Data[i] == b1 && _tmb.Data[i + 1] == b2)
+            List<HistoryRecordEntry> records = new List<HistoryRecordEntry>();
+            for (int i = 6; i < _tmb.Data.Length - 4; i++)
             {
-                short id1 = BitConverter.ToInt16(new byte[] { _tmb.Data[i - 6], _tmb.Data[i - 5] }, 0);
-                short id2 = BitConverter.ToInt16(new byte[] { _tmb.Data[i - 4], _tmb.Data[i - 3] }, 0);
-                short id3 = BitConverter.ToInt16(new byte[] { _tmb.Data[i - 2], _tmb.Data[i - 1] }, 0);
-                if (id3 != 0)
-                    throw new ArgumentException($"Unexpected non-zero id3 for record with id1: {id1}, id2: {id2}, id3: {id3}.");
-                historyRecord.ID = (id1 + 29839); // to make the id positive
-                historyRecord.Delimiter = $"{b1:X2}{b2:X2}";
-                switch (type)
+                var historyRecord = new HistoryRecordEntry();
+                if (_tmb.Data[i] == b1 && _tmb.Data[i + 1] == b2)
                 {
-                    case HistoryRecordValueTypes.Text:
-                        short len = BitConverter.ToInt16(new byte[] { _tmb.Data[i + 2], _tmb.Data[i + 3] }, 0);
-                        if (id2 - len != 4)
-                            throw new ArgumentException($"Inconsistent record length for text record with id1: {id1}, id2: {id2}, id3: {id3}.");
-                        historyRecord.RecordText = Encoding.ASCII.GetString(_tmb.Data, i + 4, len);
-                        break;
-                    case HistoryRecordValueTypes.ShortInt:
-                        if (id2 != 8)
-                            throw new ArgumentException($"Unexpected value id2 for short int record with id1: {id1}, id2: {id2}, id3: {id3}.");
-                        historyRecord.RecordText = BitConverter.ToInt16(new byte[] { _tmb.Data[i + 2], _tmb.Data[i + 3] }, 0).ToString();
-                        break;
-                    case HistoryRecordValueTypes.Double:
-                        if (id2 != 14)
-                            throw new ArgumentException($"Unexpected value id2 for double record with id1: {id1}, id2: {id2}, id3: {id3}.");
-                        historyRecord.RecordText = BitConverter.ToDouble(new byte[] { _tmb.Data[i + 2], _tmb.Data[i + 3], _tmb.Data[i + 4], _tmb.Data[i + 5], _tmb.Data[i + 6], _tmb.Data[i + 7], _tmb.Data[i + 8], _tmb.Data[i + 9] }, 0).ToString();
-                        break;
-                    default:
-                        throw new ArgumentException($"Unsupported history record value type: {type}");
+                    short id1 = BitConverter.ToInt16(new byte[] { _tmb.Data[i - 6], _tmb.Data[i - 5] }, 0);
+                    short id2 = BitConverter.ToInt16(new byte[] { _tmb.Data[i - 4], _tmb.Data[i - 3] }, 0);
+                    short id3 = BitConverter.ToInt16(new byte[] { _tmb.Data[i - 2], _tmb.Data[i - 1] }, 0);
+                    if (id3 != 0)
+                        throw new ArgumentException($"Unexpected non-zero id3 for record with id1: {id1}, id2: {id2}, id3: {id3}.");
+                    historyRecord.ID = (id1 + 29839); // to make the id positive
+                    historyRecord.Delimiter = $"{b1:X2}{b2:X2}";
+                    switch (type)
+                    {
+                        case HistoryRecordValueTypes.Text:
+                            short len = BitConverter.ToInt16(new byte[] { _tmb.Data[i + 2], _tmb.Data[i + 3] }, 0);
+                            if (id2 - len != 4)
+                                throw new ArgumentException($"Inconsistent record length for text record with id1: {id1}, id2: {id2}, id3: {id3}.");
+                            historyRecord.RecordText = Encoding.ASCII.GetString(_tmb.Data, i + 4, len);
+                            break;
+                        case HistoryRecordValueTypes.ShortInt:
+                            if (id2 != 8)
+                                throw new ArgumentException($"Unexpected value id2 for short int record with id1: {id1}, id2: {id2}, id3: {id3}.");
+                            historyRecord.RecordText = BitConverter.ToInt16(new byte[] { _tmb.Data[i + 2], _tmb.Data[i + 3] }, 0).ToString();
+                            break;
+                        case HistoryRecordValueTypes.Double:
+                            if (id2 != 14)
+                                throw new ArgumentException($"Unexpected value id2 for double record with id1: {id1}, id2: {id2}, id3: {id3}.");
+                            historyRecord.RecordText = BitConverter.ToDouble(new byte[] { _tmb.Data[i + 2], _tmb.Data[i + 3], _tmb.Data[i + 4], _tmb.Data[i + 5], _tmb.Data[i + 6], _tmb.Data[i + 7], _tmb.Data[i + 8], _tmb.Data[i + 9] }, 0).ToString();
+                            break;
+                        default:
+                            throw new ArgumentException($"Unsupported history record value type: {type}");
+                    }
                 }
             }
-            return historyRecord;
+            return records.ToArray();
         }
 
         public HistoryRecordEntry[] GetHistoryRecordsAsObjects()
