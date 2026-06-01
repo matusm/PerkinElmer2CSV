@@ -45,7 +45,7 @@
   "_UnknownRecord2D75_ID219": "0",
   "_UnknownRecord2D75_ID220": "0",
   "_UnknownRecord2D75_ID229": "0",
-  "_UnknownRecord2D75_ID240": "100",
+  "CommonBeamMask": "100",
   "_UnknownRecord2D75_ID259": "0",
   "_UnknownRecord1C75_ID208": "0.0",
   "_UnknownRecord1C75_ID209": "0.0",

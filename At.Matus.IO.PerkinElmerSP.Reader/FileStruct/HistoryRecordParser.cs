@@ -20,10 +20,61 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
             var historyRecords = GetHistoryRecordsAsObjects();
             Dictionary<string, string> records = new Dictionary<string, string>();
             for (int i = 0; i < historyRecords.Length; i++)
-            {
-                records[historyRecords[i].KeyName] = historyRecords[i].RecordText;//.Trim().Trim('"');
-            }
+                records[historyRecords[i].KeyName] = historyRecords[i].RecordText;
             return records;
+        }
+
+        private (byte b1, byte b2) GetDelimiterBytes(HistoryRecordValueTypes type)
+        {
+            switch (type)
+            {
+                case HistoryRecordValueTypes.Text:
+                    return (0x23, 0x75); // #u
+                case HistoryRecordValueTypes.ShortInt:
+                    return (0x2D, 0x75); // -u
+                case HistoryRecordValueTypes.Double:
+                    return (0x1C, 0x75); // .u
+                default:
+                    throw new ArgumentException($"Unsupported history record value type: {type}");
+            }
+        }
+
+        private HistoryRecordEntry FindEntry(int i, HistoryRecordValueTypes type)
+        {
+            var (b1, b2) = GetDelimiterBytes(type);
+            var historyRecord = new HistoryRecordEntry();
+            if (_tmb.Data[i] == b1 && _tmb.Data[i + 1] == b2)
+            {
+                short id1 = BitConverter.ToInt16(new byte[] { _tmb.Data[i - 6], _tmb.Data[i - 5] }, 0);
+                short id2 = BitConverter.ToInt16(new byte[] { _tmb.Data[i - 4], _tmb.Data[i - 3] }, 0);
+                short id3 = BitConverter.ToInt16(new byte[] { _tmb.Data[i - 2], _tmb.Data[i - 1] }, 0);
+                if (id3 != 0)
+                    throw new ArgumentException($"Unexpected non-zero id3 for record with id1: {id1}, id2: {id2}, id3: {id3}.");
+                historyRecord.ID = (id1 + 29839); // to make the id positive
+                historyRecord.Delimiter = $"{b1:X2}{b2:X2}";
+                switch (type)
+                {
+                    case HistoryRecordValueTypes.Text:
+                        short len = BitConverter.ToInt16(new byte[] { _tmb.Data[i + 2], _tmb.Data[i + 3] }, 0);
+                        if (id2 - len != 4)
+                            throw new ArgumentException($"Inconsistent record length for text record with id1: {id1}, id2: {id2}, id3: {id3}.");
+                        historyRecord.RecordText = Encoding.ASCII.GetString(_tmb.Data, i + 4, len);
+                        break;
+                    case HistoryRecordValueTypes.ShortInt:
+                        if (id2 != 8)
+                            throw new ArgumentException($"Unexpected value id2 for short int record with id1: {id1}, id2: {id2}, id3: {id3}.");
+                        historyRecord.RecordText = BitConverter.ToInt16(new byte[] { _tmb.Data[i + 2], _tmb.Data[i + 3] }, 0).ToString();
+                        break;
+                    case HistoryRecordValueTypes.Double:
+                        if (id2 != 14)
+                            throw new ArgumentException($"Unexpected value id2 for double record with id1: {id1}, id2: {id2}, id3: {id3}.");
+                        historyRecord.RecordText = BitConverter.ToDouble(new byte[] { _tmb.Data[i + 2], _tmb.Data[i + 3], _tmb.Data[i + 4], _tmb.Data[i + 5], _tmb.Data[i + 6], _tmb.Data[i + 7], _tmb.Data[i + 8], _tmb.Data[i + 9] }, 0).ToString();
+                        break;
+                    default:
+                        throw new ArgumentException($"Unsupported history record value type: {type}");
+                }
+            }
+            return historyRecord;
         }
 
         public HistoryRecordEntry[] GetHistoryRecordsAsObjects()
@@ -45,7 +96,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
                     var historyRecord = new HistoryRecordEntry();
                     // get the length of the current record (the 2 bytes after #u)
                     short len = BitConverter.ToInt16(new byte[] { raw[i + 2], raw[i + 3] }, 0);
-                    string record = Encoding.ASCII.GetString(raw, i + 4, len);
+                    string record = Encoding.Default.GetString(raw, i + 4, len);
                     short id1 = BitConverter.ToInt16(new byte[] { raw[i - 6], raw[i - 5] }, 0);
                     short id2 = BitConverter.ToInt16(new byte[] { raw[i - 4], raw[i - 3] }, 0);
                     short id3 = BitConverter.ToInt16(new byte[] { raw[i - 2], raw[i - 1] }, 0);
@@ -57,7 +108,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
                             throw new ArgumentException($"Inconsistent record length for record '{record}' with id1: {id1}, id2: {id2}, id3: {id3} and len: {len}");
                     }
                     historyRecord.RecordText = record;
-                    historyRecord.TitleCode = (id1 + 29839); // to make the id positive
+                    historyRecord.ID = (id1 + 29839); // to make the id positive
                     historyRecord.Delimiter = "2375";
                     records.Add(historyRecord);
                 }
@@ -80,7 +131,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
                             throw new ArgumentException($"Unexpected value id2 for record with id: {id1}.");
                     }
                     historyRecord.RecordText = val.ToString();
-                    historyRecord.TitleCode = (id1 + 29839); // to make the id positive
+                    historyRecord.ID = (id1 + 29839); // to make the id positive
                     historyRecord.Delimiter = "2D75";
                     records.Add(historyRecord);
                 }
@@ -103,7 +154,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
                             throw new ArgumentException($"Unexpected value id2 for record with id: {id1}.");
                     }
                     historyRecord.RecordText = $"{val:f1}";
-                    historyRecord.TitleCode = (id1 + 29839); // to make the id positive
+                    historyRecord.ID = (id1 + 29839); // to make the id positive
                     historyRecord.Delimiter = "1C75";
                     records.Add(historyRecord);
                 }

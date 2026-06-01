@@ -2,6 +2,7 @@
 {
     public enum HistoryRecordValueTypes
     {
+        Unknown,
         Text,
         ShortInt,
         Double
@@ -22,6 +23,8 @@
         InstrumentSoftwareRevision = 142,
         SlitWidth = 210,
         LampsUsed = 213,
+        CycleTime = 215,
+        Cycles = 217,
         InstrumentAccessories = 218,
         UvVisSlitMode = 224,
         NirSlitMode = 225,

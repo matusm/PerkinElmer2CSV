@@ -35,7 +35,7 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
             try
             {
                 int len = BitConverter.ToInt16(data, 0);
-                return Encoding.ASCII.GetString(data, 2, len);
+                return Encoding.Default.GetString(data, 2, len);
             }
             catch (ArgumentException)
             {
@@ -92,12 +92,10 @@ namespace At.Matus.IO.PerkinElmerSP.Reader
                     }
                     break;
                 case Members.DataSetName:
-                    sp.Name = ReadString(tmb.Data);
-                    sp.MetaData.AddRecord("DataSetName", $"{sp.Name}");
+                    sp.MetaData.AddRecord("DataSetName", $"{ReadString(tmb.Data)}");
                     break;
                 case Members.DataSetAlias:
-                    sp.Alias = ReadString(tmb.Data);
-                    sp.MetaData.AddRecord("DataSetAlias", $"{sp.Alias}");
+                    sp.MetaData.AddRecord("DataSetAlias", $"{ReadString(tmb.Data)}");
                     break;
                 case Members.DataSetHistoryRecord:
                     var histParser = new HistoryRecordParser(tmb);
